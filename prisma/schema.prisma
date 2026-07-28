@@ -1,0 +1,47 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  images      String[]
+  inventory   Int      @default(0)
+
+  // 3D graphic vs 2D photo fields
+  designType  String   @default("graphic_only") 
+  graphicUrl  String?
+  mockupUrl   String?
+  targetZone  String   @default("front")
+
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model PageConfig {
+  id           Int      @id @default(autoincrement())
+  themeColors  String?  @db.Text
+  sectionOrder String?  @db.Text
+  isActive     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
