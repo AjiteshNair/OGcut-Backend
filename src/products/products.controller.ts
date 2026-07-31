@@ -11,11 +11,11 @@ export class ProductsController {
   }
 
   @Get(':id')
-  getProductById(@Param('id') id: string) {
-    const product = this.productsService.findOne(id);
-    if (!product) {
-      throw new NotFoundException(`Product with id ${id} not found`);
-    }
-    return product;
+async getProductById(@Param('id') id: string) {
+  const product = await this.productsService.findOne(id);
+  if (!product) {
+    throw new NotFoundException(`Product with id ${id} not found`);
+  }
+  return product;
   }
 }

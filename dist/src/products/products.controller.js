@@ -23,8 +23,8 @@ let ProductsController = class ProductsController {
     getProducts(category) {
         return this.productsService.findAll(category);
     }
-    getProductById(id) {
-        const product = this.productsService.findOne(id);
+    async getProductById(id) {
+        const product = await this.productsService.findOne(id);
         if (!product) {
             throw new common_1.NotFoundException(`Product with id ${id} not found`);
         }
@@ -44,7 +44,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getProductById", null);
 exports.ProductsController = ProductsController = __decorate([
     (0, common_1.Controller)('products'),
