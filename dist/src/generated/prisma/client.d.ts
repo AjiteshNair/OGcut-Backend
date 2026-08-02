@@ -9,3 +9,6 @@ export { Prisma };
 export type Product = Prisma.ProductModel;
 export type Category = Prisma.CategoryModel;
 export type PageConfig = Prisma.PageConfigModel;
+export type User = Prisma.UserModel;
+export type SavedDesign = Prisma.SavedDesignModel;
+export type PageView = Prisma.PageViewModel;

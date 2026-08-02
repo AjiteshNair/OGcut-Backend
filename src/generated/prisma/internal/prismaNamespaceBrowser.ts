@@ -53,7 +53,10 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Product: 'Product',
   Category: 'Category',
-  PageConfig: 'PageConfig'
+  PageConfig: 'PageConfig',
+  User: 'User',
+  SavedDesign: 'SavedDesign',
+  PageView: 'PageView'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -112,6 +115,42 @@ export const PageConfigScalarFieldEnum = {
 } as const
 
 export type PageConfigScalarFieldEnum = (typeof PageConfigScalarFieldEnum)[keyof typeof PageConfigScalarFieldEnum]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  password_hash: 'password_hash',
+  first_name: 'first_name',
+  last_name: 'last_name',
+  role: 'role',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const SavedDesignScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  product_id: 'product_id',
+  created_at: 'created_at'
+} as const
+
+export type SavedDesignScalarFieldEnum = (typeof SavedDesignScalarFieldEnum)[keyof typeof SavedDesignScalarFieldEnum]
+
+
+export const PageViewScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  session_id: 'session_id',
+  page_path: 'page_path',
+  duration_seconds: 'duration_seconds',
+  created_at: 'created_at'
+} as const
+
+export type PageViewScalarFieldEnum = (typeof PageViewScalarFieldEnum)[keyof typeof PageViewScalarFieldEnum]
 
 
 export const SortOrder = {

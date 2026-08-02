@@ -39,5 +39,14 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get pageConfig(): Prisma.PageConfigDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get user(): Prisma.UserDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get savedDesign(): Prisma.SavedDesignDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get pageView(): Prisma.PageViewDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;

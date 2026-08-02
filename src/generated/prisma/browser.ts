@@ -32,3 +32,18 @@ export type Category = Prisma.CategoryModel
  * 
  */
 export type PageConfig = Prisma.PageConfigModel
+/**
+ * Model User
+ * 
+ */
+export type User = Prisma.UserModel
+/**
+ * Model SavedDesign
+ * 
+ */
+export type SavedDesign = Prisma.SavedDesignModel
+/**
+ * Model PageView
+ * 
+ */
+export type PageView = Prisma.PageViewModel

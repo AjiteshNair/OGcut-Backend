@@ -14,6 +14,9 @@ export declare const ModelName: {
     readonly Product: "Product";
     readonly Category: "Category";
     readonly PageConfig: "PageConfig";
+    readonly User: "User";
+    readonly SavedDesign: "SavedDesign";
+    readonly PageView: "PageView";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -56,6 +59,33 @@ export declare const PageConfigScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type PageConfigScalarFieldEnum = (typeof PageConfigScalarFieldEnum)[keyof typeof PageConfigScalarFieldEnum];
+export declare const UserScalarFieldEnum: {
+    readonly id: "id";
+    readonly email: "email";
+    readonly password_hash: "password_hash";
+    readonly first_name: "first_name";
+    readonly last_name: "last_name";
+    readonly role: "role";
+    readonly created_at: "created_at";
+    readonly updated_at: "updated_at";
+};
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+export declare const SavedDesignScalarFieldEnum: {
+    readonly id: "id";
+    readonly user_id: "user_id";
+    readonly product_id: "product_id";
+    readonly created_at: "created_at";
+};
+export type SavedDesignScalarFieldEnum = (typeof SavedDesignScalarFieldEnum)[keyof typeof SavedDesignScalarFieldEnum];
+export declare const PageViewScalarFieldEnum: {
+    readonly id: "id";
+    readonly user_id: "user_id";
+    readonly session_id: "session_id";
+    readonly page_path: "page_path";
+    readonly duration_seconds: "duration_seconds";
+    readonly created_at: "created_at";
+};
+export type PageViewScalarFieldEnum = (typeof PageViewScalarFieldEnum)[keyof typeof PageViewScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";

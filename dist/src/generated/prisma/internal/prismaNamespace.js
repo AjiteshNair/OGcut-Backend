@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.PageConfigScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.ProductScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
+exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.PageViewScalarFieldEnum = exports.SavedDesignScalarFieldEnum = exports.UserScalarFieldEnum = exports.PageConfigScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.ProductScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/client"));
 exports.PrismaClientKnownRequestError = runtime.PrismaClientKnownRequestError;
 exports.PrismaClientUnknownRequestError = runtime.PrismaClientUnknownRequestError;
@@ -62,7 +62,10 @@ exports.AnyNull = runtime.AnyNull;
 exports.ModelName = {
     Product: 'Product',
     Category: 'Category',
-    PageConfig: 'PageConfig'
+    PageConfig: 'PageConfig',
+    User: 'User',
+    SavedDesign: 'SavedDesign',
+    PageView: 'PageView'
 };
 exports.TransactionIsolationLevel = runtime.makeStrictEnum({
     ReadUncommitted: 'ReadUncommitted',
@@ -99,6 +102,30 @@ exports.PageConfigScalarFieldEnum = {
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
+};
+exports.UserScalarFieldEnum = {
+    id: 'id',
+    email: 'email',
+    password_hash: 'password_hash',
+    first_name: 'first_name',
+    last_name: 'last_name',
+    role: 'role',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+};
+exports.SavedDesignScalarFieldEnum = {
+    id: 'id',
+    user_id: 'user_id',
+    product_id: 'product_id',
+    created_at: 'created_at'
+};
+exports.PageViewScalarFieldEnum = {
+    id: 'id',
+    user_id: 'user_id',
+    session_id: 'session_id',
+    page_path: 'page_path',
+    duration_seconds: 'duration_seconds',
+    created_at: 'created_at'
 };
 exports.SortOrder = {
     asc: 'asc',
