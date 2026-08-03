@@ -16,6 +16,20 @@ export declare class AuthService {
             role: import("@prisma/client").$Enums.Role;
         };
     }>;
+    validateOAuthUser(details: {
+        email: string;
+        first_name: string;
+        last_name: string;
+    }): Promise<{
+        access_token: string;
+        user: {
+            id: string;
+            email: string;
+            first_name: string | null;
+            last_name: string | null;
+            role: import("@prisma/client").$Enums.Role;
+        };
+    }>;
     login(dto: LoginDto): Promise<{
         access_token: string;
         user: {

@@ -9,9 +9,14 @@ async function bootstrap() {
         .setTitle('OGcut API')
         .setDescription('Auth & Core API')
         .setVersion('1.0')
+        .addBearerAuth()
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api', app, document);
+    app.enableCors({
+        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        credentials: true,
+    });
     await app.listen(3001);
 }
 bootstrap();
