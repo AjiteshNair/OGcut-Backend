@@ -55,6 +55,7 @@ export const ModelName = {
   Category: 'Category',
   PageConfig: 'PageConfig',
   User: 'User',
+  Address: 'Address',
   SavedDesign: 'SavedDesign',
   PageView: 'PageView'
 } as const
@@ -129,6 +130,24 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AddressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  label: 'label',
+  phone: 'phone',
+  line1: 'line1',
+  line2: 'line2',
+  city: 'city',
+  state: 'state',
+  pincode: 'pincode',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
 
 
 export const SavedDesignScalarFieldEnum = {

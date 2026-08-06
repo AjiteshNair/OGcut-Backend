@@ -42,6 +42,9 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get user(): Prisma.UserDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get address(): Prisma.AddressDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
     get savedDesign(): Prisma.SavedDesignDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;

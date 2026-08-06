@@ -164,6 +164,7 @@ export declare const ModelName: {
     readonly Category: "Category";
     readonly PageConfig: "PageConfig";
     readonly User: "User";
+    readonly Address: "Address";
     readonly SavedDesign: "SavedDesign";
     readonly PageView: "PageView";
 };
@@ -178,7 +179,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "product" | "category" | "pageConfig" | "user" | "savedDesign" | "pageView";
+        modelProps: "product" | "category" | "pageConfig" | "user" | "address" | "savedDesign" | "pageView";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -478,6 +479,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        Address: {
+            payload: Prisma.$AddressPayload<ExtArgs>;
+            fields: Prisma.AddressFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.AddressFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.AddressFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>;
+                };
+                findFirst: {
+                    args: Prisma.AddressFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.AddressFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>;
+                };
+                findMany: {
+                    args: Prisma.AddressFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>[];
+                };
+                create: {
+                    args: Prisma.AddressCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>;
+                };
+                createMany: {
+                    args: Prisma.AddressCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.AddressCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>[];
+                };
+                delete: {
+                    args: Prisma.AddressDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>;
+                };
+                update: {
+                    args: Prisma.AddressUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.AddressDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.AddressUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.AddressUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>[];
+                };
+                upsert: {
+                    args: Prisma.AddressUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$AddressPayload>;
+                };
+                aggregate: {
+                    args: Prisma.AddressAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateAddress>;
+                };
+                groupBy: {
+                    args: Prisma.AddressGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AddressGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.AddressCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AddressCountAggregateOutputType> | number;
+                };
+            };
+        };
         SavedDesign: {
             payload: Prisma.$SavedDesignPayload<ExtArgs>;
             fields: Prisma.SavedDesignFieldRefs;
@@ -701,6 +776,21 @@ export declare const UserScalarFieldEnum: {
     readonly updated_at: "updated_at";
 };
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+export declare const AddressScalarFieldEnum: {
+    readonly id: "id";
+    readonly userId: "userId";
+    readonly label: "label";
+    readonly phone: "phone";
+    readonly line1: "line1";
+    readonly line2: "line2";
+    readonly city: "city";
+    readonly state: "state";
+    readonly pincode: "pincode";
+    readonly isDefault: "isDefault";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum];
 export declare const SavedDesignScalarFieldEnum: {
     readonly id: "id";
     readonly user_id: "user_id";
@@ -777,6 +867,7 @@ export type GlobalOmitConfig = {
     category?: Prisma.CategoryOmit;
     pageConfig?: Prisma.PageConfigOmit;
     user?: Prisma.UserOmit;
+    address?: Prisma.AddressOmit;
     savedDesign?: Prisma.SavedDesignOmit;
     pageView?: Prisma.PageViewOmit;
 };

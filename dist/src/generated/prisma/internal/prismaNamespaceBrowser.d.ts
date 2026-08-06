@@ -15,6 +15,7 @@ export declare const ModelName: {
     readonly Category: "Category";
     readonly PageConfig: "PageConfig";
     readonly User: "User";
+    readonly Address: "Address";
     readonly SavedDesign: "SavedDesign";
     readonly PageView: "PageView";
 };
@@ -70,6 +71,21 @@ export declare const UserScalarFieldEnum: {
     readonly updated_at: "updated_at";
 };
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+export declare const AddressScalarFieldEnum: {
+    readonly id: "id";
+    readonly userId: "userId";
+    readonly label: "label";
+    readonly phone: "phone";
+    readonly line1: "line1";
+    readonly line2: "line2";
+    readonly city: "city";
+    readonly state: "state";
+    readonly pincode: "pincode";
+    readonly isDefault: "isDefault";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum];
 export declare const SavedDesignScalarFieldEnum: {
     readonly id: "id";
     readonly user_id: "user_id";

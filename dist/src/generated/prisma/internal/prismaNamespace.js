@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.PageViewScalarFieldEnum = exports.SavedDesignScalarFieldEnum = exports.UserScalarFieldEnum = exports.PageConfigScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.ProductScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
+exports.defineExtension = exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.PageViewScalarFieldEnum = exports.SavedDesignScalarFieldEnum = exports.AddressScalarFieldEnum = exports.UserScalarFieldEnum = exports.PageConfigScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.ProductScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.prismaVersion = exports.getExtensionContext = exports.Decimal = exports.Sql = exports.raw = exports.join = exports.empty = exports.sql = exports.PrismaClientValidationError = exports.PrismaClientInitializationError = exports.PrismaClientRustPanicError = exports.PrismaClientUnknownRequestError = exports.PrismaClientKnownRequestError = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/client"));
 exports.PrismaClientKnownRequestError = runtime.PrismaClientKnownRequestError;
 exports.PrismaClientUnknownRequestError = runtime.PrismaClientUnknownRequestError;
@@ -64,6 +64,7 @@ exports.ModelName = {
     Category: 'Category',
     PageConfig: 'PageConfig',
     User: 'User',
+    Address: 'Address',
     SavedDesign: 'SavedDesign',
     PageView: 'PageView'
 };
@@ -112,6 +113,20 @@ exports.UserScalarFieldEnum = {
     role: 'role',
     created_at: 'created_at',
     updated_at: 'updated_at'
+};
+exports.AddressScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    label: 'label',
+    phone: 'phone',
+    line1: 'line1',
+    line2: 'line2',
+    city: 'city',
+    state: 'state',
+    pincode: 'pincode',
+    isDefault: 'isDefault',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 exports.SavedDesignScalarFieldEnum = {
     id: 'id',

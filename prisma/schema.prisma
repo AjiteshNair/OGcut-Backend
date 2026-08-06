@@ -1,7 +1,6 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -59,6 +58,24 @@ model User {
   page_views    PageView[]
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
+  addresses     Address[]
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  label     String
+  phone     String
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SavedDesign {

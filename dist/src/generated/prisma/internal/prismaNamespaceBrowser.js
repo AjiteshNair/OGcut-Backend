@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.PageViewScalarFieldEnum = exports.SavedDesignScalarFieldEnum = exports.UserScalarFieldEnum = exports.PageConfigScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.ProductScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.PageViewScalarFieldEnum = exports.SavedDesignScalarFieldEnum = exports.AddressScalarFieldEnum = exports.UserScalarFieldEnum = exports.PageConfigScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.ProductScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -49,6 +49,7 @@ exports.ModelName = {
     Category: 'Category',
     PageConfig: 'PageConfig',
     User: 'User',
+    Address: 'Address',
     SavedDesign: 'SavedDesign',
     PageView: 'PageView'
 };
@@ -97,6 +98,20 @@ exports.UserScalarFieldEnum = {
     role: 'role',
     created_at: 'created_at',
     updated_at: 'updated_at'
+};
+exports.AddressScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    label: 'label',
+    phone: 'phone',
+    line1: 'line1',
+    line2: 'line2',
+    city: 'city',
+    state: 'state',
+    pincode: 'pincode',
+    isDefault: 'isDefault',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 exports.SavedDesignScalarFieldEnum = {
     id: 'id',

@@ -14,7 +14,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
     const adapter = new PrismaPg(pool);
 
-    // Prisma 7 requires passing the adapter to super()
     super({ adapter });
   }
 
