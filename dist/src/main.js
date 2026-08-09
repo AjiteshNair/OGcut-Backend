@@ -2,9 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const swagger_1 = require("@nestjs/swagger");
+const express_1 = require("express");
 const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.setGlobalPrefix('api');
+    app.use((0, express_1.json)({ limit: '50mb' }));
+    app.use((0, express_1.urlencoded)({ limit: '50mb', extended: true }));
+    app.enableCors({
+        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        credentials: true,
+    });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('OGcut API')
         .setDescription('Auth & Core API')
@@ -12,12 +20,8 @@ async function bootstrap() {
         .addBearerAuth()
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup('api', app, document);
-    app.enableCors({
-        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-        credentials: true,
-    });
-    await app.listen(3001);
+    swagger_1.SwaggerModule.setup('docs', app, document);
+    await app.listen(process.env.PORT || 3001);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

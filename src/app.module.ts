@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AddressModule } from './address/address.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AddressModule } from './address/address.module';
     ProductsModule,
     CategoriesModule,
     AuthModule,
+    CartModule,
     UsersModule,
     AnalyticsModule,
     AddressModule 
