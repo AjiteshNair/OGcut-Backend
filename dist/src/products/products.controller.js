@@ -20,7 +20,7 @@ let ProductsController = class ProductsController {
     constructor(productsService) {
         this.productsService = productsService;
     }
-    getProducts(category) {
+    async getProducts(category) {
         return this.productsService.findAll(category);
     }
     async getProductById(id) {
@@ -37,13 +37,13 @@ __decorate([
     __param(0, (0, common_1.Query)('category')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getProducts", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getProductById", null);
 exports.ProductsController = ProductsController = __decorate([

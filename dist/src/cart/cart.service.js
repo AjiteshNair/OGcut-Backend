@@ -10,10 +10,26 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var CartService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CartService = void 0;
+exports.CartService = exports.CustomizationPayload = exports.CustomizationPlacementDto = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const storage_service_1 = require("../storage/storage.service");
 const prisma_service_1 = require("../prisma/prisma.service");
+class CustomizationPlacementDto {
+    zone;
+    image;
+    coordinates;
+    printZoneBounds;
+}
+exports.CustomizationPlacementDto = CustomizationPlacementDto;
+class CustomizationPayload {
+    fabricColor;
+    userId;
+    addressId;
+    unitPrice;
+    placements;
+}
+exports.CustomizationPayload = CustomizationPayload;
 let CartService = CartService_1 = class CartService {
     storageService;
     prisma;
@@ -22,28 +38,101 @@ let CartService = CartService_1 = class CartService {
         this.storageService = storageService;
         this.prisma = prisma;
     }
+    async getAdminOrders(page = 1, limit = 20) {
+        const skip = (page - 1) * limit;
+        const [orders, totalCount] = await Promise.all([
+            this.prisma.order.findMany({
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            first_name: true,
+                            last_name: true,
+                        },
+                    },
+                    address: true,
+                    items: {
+                        include: {
+                            product: true,
+                            customShirtOrder: {
+                                include: { placements: true },
+                            },
+                        },
+                    },
+                },
+            }),
+            this.prisma.order.count(),
+        ]);
+        return {
+            orders,
+            pagination: {
+                total: totalCount,
+                page,
+                limit,
+                totalPages: Math.ceil(totalCount / limit),
+            },
+        };
+    }
+    async getAdminOrderById(id) {
+        const order = await this.prisma.order.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        first_name: true,
+                        last_name: true,
+                    },
+                },
+                address: true,
+                items: {
+                    include: {
+                        product: true,
+                        customShirtOrder: {
+                            include: { placements: true },
+                        },
+                    },
+                },
+            },
+        });
+        if (!order) {
+            throw new common_1.NotFoundException(`Order with ID ${id} not found`);
+        }
+        return order;
+    }
+    async updateOrderStatus(id, status) {
+        const order = await this.prisma.order.findUnique({ where: { id } });
+        if (!order) {
+            throw new common_1.NotFoundException(`Order with ID ${id} not found`);
+        }
+        return this.prisma.order.update({
+            where: { id },
+            data: { status },
+        });
+    }
     async processAndSaveOrder(payload) {
-        const { fabricColor, placements } = payload;
+        const { fabricColor, placements, userId, addressId, unitPrice = 0 } = payload;
         if (!placements || placements.length === 0) {
             throw new common_1.BadRequestException('At least one design placement is required.');
         }
         this.logger.log(`Processing order with ${placements.length} placement(s)...`);
         const placementData = await Promise.all(placements.map(async (placement, index) => {
-            let imageUrl = '';
-            if (placement.image) {
-                const fileName = `custom-${placement.zone}-${Date.now()}-${index}.png`;
-                this.logger.log(`Uploading ${placement.zone} image to Supabase: ${fileName}`);
-                imageUrl = await this.storageService.uploadBase64Image(placement.image, 'shirt-designs', `custom-orders/${fileName}`);
-                this.logger.log(`Uploaded ${placement.zone} URL: ${imageUrl}`);
-            }
-            else {
+            if (!placement.image) {
                 throw new common_1.BadRequestException(`Missing base64 image string in placement index ${index}`);
             }
+            const fileName = `custom-${placement.zone}-${Date.now()}-${index}.png`;
+            this.logger.log(`Uploading ${placement.zone} image to Supabase: ${fileName}`);
+            const imageUrl = await this.storageService.uploadBase64Image(placement.image, 'shirt-designs', `custom-orders/${fileName}`);
             const coords = placement.coordinates || {};
             const bounds = placement.printZoneBounds || {};
             return {
                 zone: placement.zone || 'front',
-                imageUrl: imageUrl,
+                imageUrl,
                 x: Number(coords.x || 0),
                 y: Number(coords.y || 0),
                 scale: Number(coords.scale || 1),
@@ -55,19 +144,41 @@ let CartService = CartService_1 = class CartService {
                 clipHeight: Number(bounds.clipHeight || 0),
             };
         }));
-        const customOrder = await this.prisma.customShirtOrder.create({
+        const newOrder = await this.prisma.order.create({
             data: {
-                fabricColor: fabricColor || 'white',
-                placements: {
-                    create: placementData,
+                userId: userId || null,
+                addressId: addressId || null,
+                status: client_1.OrderStatus.RECEIVED,
+                totalAmount: unitPrice,
+                items: {
+                    create: [
+                        {
+                            quantity: 1,
+                            unitPrice: unitPrice,
+                            customShirtOrder: {
+                                create: {
+                                    fabricColor: fabricColor || 'white',
+                                    placements: {
+                                        create: placementData,
+                                    },
+                                },
+                            },
+                        },
+                    ],
                 },
             },
             include: {
-                placements: true,
+                items: {
+                    include: {
+                        customShirtOrder: {
+                            include: { placements: true },
+                        },
+                    },
+                },
             },
         });
-        this.logger.log(`Custom order successfully created with ID: ${customOrder.id}`);
-        return customOrder;
+        this.logger.log(`Unified Order successfully created with ID: ${newOrder.id}`);
+        return newOrder;
     }
 };
 exports.CartService = CartService;

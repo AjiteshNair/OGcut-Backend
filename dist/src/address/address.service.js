@@ -17,24 +17,48 @@ let AddressService = class AddressService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getUserAddresses(userId) {
-        return this.prisma.address.findMany({
-            where: { userId },
-            orderBy: { createdAt: 'desc' },
-        });
-    }
-    async createAddress(userId, dto) {
+    async create(userId, dto) {
         if (dto.isDefault) {
             await this.prisma.address.updateMany({
-                where: { userId },
+                where: { userId, isDefault: true },
                 data: { isDefault: false },
             });
         }
         return this.prisma.address.create({
             data: {
-                userId,
-                ...dto,
+                user: {
+                    connect: { id: userId },
+                },
+                fullName: dto.fullName,
+                phone: dto.phone,
+                label: dto.label,
+                line1: dto.line1,
+                line2: dto.line2,
+                city: dto.city,
+                state: dto.state,
+                pincode: dto.pincode,
+                isDefault: dto.isDefault ?? false,
             },
+        });
+    }
+    async findAllByUser(userId) {
+        return this.prisma.address.findMany({
+            where: { userId },
+            orderBy: [
+                { isDefault: 'desc' },
+                { createdAt: 'desc' },
+            ],
+        });
+    }
+    async delete(userId, addressId) {
+        const address = await this.prisma.address.findFirst({
+            where: { id: addressId, userId },
+        });
+        if (!address) {
+            throw new common_1.NotFoundException('Address not found');
+        }
+        return this.prisma.address.delete({
+            where: { id: addressId },
         });
     }
 };

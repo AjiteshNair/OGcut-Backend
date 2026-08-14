@@ -1,4 +1,4 @@
-// schema.prisma
+// prisma/schema.prisma
 
 generator client {
   provider        = "prisma-client-js"
@@ -9,19 +9,54 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  password_hash String
+  first_name    String?
+  last_name     String?
+  role          Role          @default(CUSTOMER)
+  saved_designs SavedDesign[]
+  page_views    PageView[]
+  addresses     Address[]
+  designs       Design[]      // Community & user-created designs
+  orders        Order[]       // Customer order history
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  fullName  String
+  phone     String
+  label     String?  // e.g., "Home", "Work"
+  line1     String
+  line2     String?
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+}
+
 model Product {
-  id           Int           @id @default(autoincrement())
-  name         String
-  description  String
-  price        Decimal       @db.Decimal(10, 2)
-  images       String[]
-  inventory    Int           @default(0)
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  price       Decimal @db.Decimal(10, 2)
+  images      String[]
+  inventory   Int     @default(0)
 
   // 3D graphic vs 2D photo fields
-  designType   String        @default("graphic_only")
-  graphicUrl   String?
-  mockupUrl    String?
-  targetZone   String        @default("front")
+  designType String  @default("graphic_only")
+  graphicUrl String?
+  mockupUrl  String?
+  targetZone String  @default("front")
 
   categoryId   Int
   category     Category      @relation(fields: [categoryId], references: [id])
@@ -47,40 +82,6 @@ model PageConfig {
   isActive     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-}
-
-model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  password_hash String
-  first_name    String?
-  last_name     String?
-  role          Role          @default(CUSTOMER)
-  saved_designs SavedDesign[]
-  page_views    PageView[]
-  addresses     Address[]
-  designs       Design[]      // Community & user-created designs
-  orders        Order[]       // Customer order history
-  created_at    DateTime      @default(now())
-  updated_at    DateTime      @updatedAt
-}
-
-model Address {
-  id        String   @id @default(uuid())
-  userId    String
-  label     String
-  phone     String
-  line1     String
-  line2     String?
-  city      String
-  state     String
-  pincode   String
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
 }
 
 model SavedDesign {
@@ -109,112 +110,117 @@ enum Role {
   ADMIN
 }
 
-// ==========================================
-// NEW MODELS: MARKETPLACE & PRINT ORDERS
-// ==========================================
-
 model Design {
-  id           String      @id @default(uuid())
-  title        String      @default("Untitled Design")
-  imageUrl     String      // High-res asset URL (Cloudinary)
-  publicId     String?     // Cloudinary Asset ID
+  id           String   @id @default(uuid())
+  title        String   @default("Untitled Design")
+  imageUrl     String   // High-res asset URL (Cloudinary)
+  publicId     String?  // Cloudinary Asset ID
 
   authorId     String?
-  author       User?       @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  author       User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
-  isPublic     Boolean     @default(true) // Allows other users to pick this design in the 3D studio
-  category     String?     @default("General")
+  isPublic     Boolean  @default(true) // Allows other users to pick this design in the 3D studio
+  category     String?  @default("General")
   tags         String[]
 
   // Preset calibrations for the 3D studio
-  defaultZone  String      @default("front")
+  defaultZone  String   @default("front")
   customWidth  Float
   customHeight Float
 
   orderItems   OrderItem[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
+
+// ==========================================
+// CONSOLIDATED ORDER ARCHITECTURE
+// ==========================================
 
 model Order {
-  id          String      @id @default(uuid())
-  userId      String?
-  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id            String        @id @default(uuid())
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   
-  addressId   String?
-  address     Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  addressId     String?
+  address       Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
 
-  status      OrderStatus @default(PENDING)
-  fabricColor String
-  total       Decimal     @db.Decimal(10, 2)
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  totalAmount   Decimal       @db.Decimal(10, 2)
 
-  items       OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-}
-
-model CustomShirtOrder {
-  id          String         @id @default(uuid())
-  fabricColor String
-  placements  DesignPlacement[]
-  createdAt   DateTime       @default(now())
-}
-
-model DesignPlacement {
-  id          String           @id @default(uuid())
-  orderId     String
-  order       CustomShirtOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  zone        String           // 'front' | 'back' | 'leftSleeve' | 'rightSleeve'
-  imageUrl    String           // Public storage URL
-  x           Float
-  y           Float
-  scale       Float
-  width       Float
-  height      Float
-  centerX     Float
-  centerY     Float
-  clipWidth   Float
-  clipHeight  Float
-
-  @@index([orderId])
+  items         OrderItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model OrderItem {
-  id           String   @id @default(uuid())
-  orderId      String
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id                  String            @id @default(uuid())
+  orderId             String
+  order               Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  productId    Int?
-  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  // Standard Store Product link
+  productId           Int?
+  product             Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
 
-  designId     String?
-  design       Design?  @relation(fields: [designId], references: [id], onDelete: SetNull)
+  // Marketplace Design link
+  designId            String?
+  design              Design?           @relation(fields: [designId], references: [id], onDelete: SetNull)
 
-  // Print execution coordinates & asset reference
-  zone         String   // 'front' | 'back' | 'leftSleeve' | 'rightSleeve'
-  imageUrl     String
+  // 3D Studio Custom Shirt link
+  customShirtOrderId String?           @unique
+  customShirtOrder   CustomShirtOrder? @relation(fields: [customShirtOrderId], references: [id], onDelete: Cascade)
 
-  // UV Base Print Area Calibration
-  clipX        Float
-  clipY        Float
-  clipWidth    Float
-  clipHeight   Float
+  quantity            Int               @default(1)
+  size                String?           // e.g., "S", "M", "L", "XL"
+  unitPrice           Decimal           @db.Decimal(10, 2)
+  createdAt           DateTime          @default(now())
+}
 
-  // User Custom Transformation
-  offsetX      Float
-  offsetY      Float
-  scale        Float
-  customWidth  Float
-  customHeight Float
+model CustomShirtOrder {
+  id          String            @id @default(uuid())
+  fabricColor String
+  orderItem   OrderItem?
+  placements  DesignPlacement[]
+  createdAt   DateTime          @default(now())
+}
 
-  createdAt    DateTime @default(now())
+model DesignPlacement {
+  id                 String           @id @default(uuid())
+  customShirtOrderId String
+  customShirtOrder   CustomShirtOrder @relation(fields: [customShirtOrderId], references: [id], onDelete: Cascade)
+  
+  zone               String           // 'front' | 'back' | 'leftSleeve' | 'rightSleeve'
+  imageUrl           String           // Public storage URL
+  
+  // Coordinates & Print Transformations
+  x                  Float
+  y                  Float
+  scale              Float
+  width              Float
+  height             Float
+  centerX            Float
+  centerY            Float
+  clipWidth          Float
+  clipHeight         Float
+
+  @@index([customShirtOrderId])
 }
 
 enum OrderStatus {
   PENDING
+  RECEIVED
   PROCESSING
   PRINTING
+  FULFILLED
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }

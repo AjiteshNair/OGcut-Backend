@@ -7,8 +7,10 @@ export declare class UsersService {
     }>;
     getSavedDesigns(userId: string): Promise<({
         product: {
-            id: number;
             name: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
             description: string;
             price: import("@prisma/client-runtime-utils").Decimal;
             images: string[];
@@ -18,8 +20,6 @@ export declare class UsersService {
             mockupUrl: string | null;
             targetZone: string;
             categoryId: number;
-            createdAt: Date;
-            updatedAt: Date;
         };
     } & {
         id: string;

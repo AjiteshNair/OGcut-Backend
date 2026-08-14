@@ -3,19 +3,49 @@ import { CreateAddressDto } from './dto/create-address.dto';
 export declare class AddressController {
     private readonly addressService;
     constructor(addressService: AddressService);
-    getMyAddresses(req: any): Promise<{
+    create(req: any, dto: CreateAddressDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         userId: string;
-        label: string;
+        fullName: string;
         phone: string;
+        label: string | null;
         line1: string;
         line2: string | null;
         city: string;
         state: string;
         pincode: string;
         isDefault: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    findAllByUser(req: any): Promise<{
+        id: string;
+        userId: string;
+        fullName: string;
+        phone: string;
+        label: string | null;
+        line1: string;
+        line2: string | null;
+        city: string;
+        state: string;
+        pincode: string;
+        isDefault: boolean;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
-    addAddress(req: any, dto: CreateAddressDto): Promise<any>;
+    delete(req: any, id: string): Promise<{
+        id: string;
+        userId: string;
+        fullName: string;
+        phone: string;
+        label: string | null;
+        line1: string;
+        line2: string | null;
+        city: string;
+        state: string;
+        pincode: string;
+        isDefault: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
 }

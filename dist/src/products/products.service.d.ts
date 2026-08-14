@@ -1,5 +1,4 @@
-import 'dotenv/config';
-import { OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 export type ProductResponse = {
     id: string;
     name: string;
@@ -11,11 +10,9 @@ export type ProductResponse = {
     mockup_url: string | null;
     target_zone: string;
 };
-export declare class ProductsService implements OnModuleInit, OnModuleDestroy {
-    private prisma;
-    constructor();
-    onModuleInit(): Promise<void>;
-    onModuleDestroy(): Promise<void>;
+export declare class ProductsService {
+    private readonly prisma;
+    constructor(prisma: PrismaService);
     findAll(category?: string): Promise<ProductResponse[]>;
-    findOne(id: string): Promise<ProductResponse | null>;
+    findOne(id: number): Promise<ProductResponse | null>;
 }

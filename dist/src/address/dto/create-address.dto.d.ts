@@ -1,6 +1,7 @@
 export declare class CreateAddressDto {
-    label: string;
+    fullName: string;
     phone: string;
+    label: string;
     line1: string;
     line2?: string;
     city: string;

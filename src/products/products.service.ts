@@ -1,9 +1,5 @@
-import 'dotenv/config';
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-// Import from your generated folder, NOT '@prisma/client'
-import { PrismaClient } from '../generated/prisma/client'; 
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 export type ProductResponse = {
   id: string;
@@ -18,29 +14,8 @@ export type ProductResponse = {
 };
 
 @Injectable()
-export class ProductsService implements OnModuleInit, OnModuleDestroy {
-  private prisma: PrismaClient;
-
-  constructor() {
-    const connectionString = process.env.DATABASE_URL;
-
-    if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is missing in .env file!');
-    }
-
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
-
-    this.prisma = new PrismaClient({ adapter });
-  }
-
-  async onModuleInit() {
-    await this.prisma.$connect();
-  }
-
-  async onModuleDestroy() {
-    await this.prisma.$disconnect();
-  }
+export class ProductsService {
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll(category?: string): Promise<ProductResponse[]> {
     const products = await this.prisma.product.findMany({
@@ -72,12 +47,9 @@ export class ProductsService implements OnModuleInit, OnModuleDestroy {
     }));
   }
 
-  async findOne(id: string): Promise<ProductResponse | null> {
-    const numericId = parseInt(id, 10);
-    if (isNaN(numericId)) return null;
-
+  async findOne(id: number): Promise<ProductResponse | null> {
     const product = await this.prisma.product.findUnique({
-      where: { id: numericId },
+      where: { id },
       include: { category: true },
     });
 

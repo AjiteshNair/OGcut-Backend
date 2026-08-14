@@ -12,55 +12,53 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AddressController = void 0;
+exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
-const address_service_1 = require("./address.service");
-const create_address_dto_1 = require("./dto/create-address.dto");
-let AddressController = class AddressController {
-    addressService;
-    constructor(addressService) {
-        this.addressService = addressService;
+const create_order_dto_1 = require("./dto/create-order.dto");
+const orders_service_1 = require("./orders.service");
+let OrdersController = class OrdersController {
+    ordersService;
+    constructor(ordersService) {
+        this.ordersService = ordersService;
     }
-    async create(req, dto) {
-        console.log('Decoded Auth User:', req.user);
-        const userId = req.user?.id || req.user?.sub;
-        return this.addressService.create(req.user.userId, dto);
+    async createOrder(req, dto) {
+        return this.ordersService.createOrder(req.user.id, dto);
     }
-    async findAllByUser(req) {
-        return this.addressService.findAllByUser(req.user.id);
+    async getUserOrders(req) {
+        return this.ordersService.getUserOrders(req.user.id);
     }
-    async delete(req, id) {
-        return this.addressService.delete(req.user.id, id);
+    async getOrderById(req, id) {
+        return this.ordersService.getOrderById(req.user.id, id);
     }
 };
-exports.AddressController = AddressController;
+exports.OrdersController = OrdersController;
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, create_address_dto_1.CreateAddressDto]),
+    __metadata("design:paramtypes", [Object, create_order_dto_1.CreateOrderDto]),
     __metadata("design:returntype", Promise)
-], AddressController.prototype, "create", null);
+], OrdersController.prototype, "createOrder", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], AddressController.prototype, "findAllByUser", null);
+], OrdersController.prototype, "getUserOrders", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
+    (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
-], AddressController.prototype, "delete", null);
-exports.AddressController = AddressController = __decorate([
-    (0, common_1.Controller)('addresses'),
+], OrdersController.prototype, "getOrderById", null);
+exports.OrdersController = OrdersController = __decorate([
+    (0, common_1.Controller)('orders'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [address_service_1.AddressService])
-], AddressController);
-//# sourceMappingURL=address.controller.js.map
+    __metadata("design:paramtypes", [orders_service_1.OrdersService])
+], OrdersController);
+//# sourceMappingURL=orders.controller.js.map

@@ -10,27 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductsService = void 0;
-require("dotenv/config");
 const common_1 = require("@nestjs/common");
-const client_1 = require("../generated/prisma/client");
-const adapter_pg_1 = require("@prisma/adapter-pg");
-const pg_1 = require("pg");
+const prisma_service_1 = require("../prisma/prisma.service");
 let ProductsService = class ProductsService {
     prisma;
-    constructor() {
-        const connectionString = process.env.DATABASE_URL;
-        if (!connectionString) {
-            throw new Error('DATABASE_URL environment variable is missing in .env file!');
-        }
-        const pool = new pg_1.Pool({ connectionString });
-        const adapter = new adapter_pg_1.PrismaPg(pool);
-        this.prisma = new client_1.PrismaClient({ adapter });
-    }
-    async onModuleInit() {
-        await this.prisma.$connect();
-    }
-    async onModuleDestroy() {
-        await this.prisma.$disconnect();
+    constructor(prisma) {
+        this.prisma = prisma;
     }
     async findAll(category) {
         const products = await this.prisma.product.findMany({
@@ -61,11 +46,8 @@ let ProductsService = class ProductsService {
         }));
     }
     async findOne(id) {
-        const numericId = parseInt(id, 10);
-        if (isNaN(numericId))
-            return null;
         const product = await this.prisma.product.findUnique({
-            where: { id: numericId },
+            where: { id },
             include: { category: true },
         });
         if (!product)
@@ -86,6 +68,6 @@ let ProductsService = class ProductsService {
 exports.ProductsService = ProductsService;
 exports.ProductsService = ProductsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], ProductsService);
 //# sourceMappingURL=products.service.js.map
