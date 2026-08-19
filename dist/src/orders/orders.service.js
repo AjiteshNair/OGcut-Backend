@@ -28,7 +28,7 @@ let OrdersService = class OrdersService {
             throw new common_1.NotFoundException('Selected shipping address was not found');
         }
         const totalAmount = dto.items.reduce((sum, item) => {
-            return sum + item.unitPrice * item.quantity;
+            return sum + Number(item.unitPrice) * item.quantity;
         }, 0);
         return this.prisma.$transaction(async (tx) => {
             const order = await tx.order.create({
@@ -41,24 +41,24 @@ let OrdersService = class OrdersService {
                 },
             });
             for (const item of dto.items) {
-                let customShirtOrderId = undefined;
-                if (item.customShirtOrder) {
+                let customShirtOrderId = null;
+                if (item.customShirtOrder && Array.isArray(item.customShirtOrder.placements) && item.customShirtOrder.placements.length > 0) {
                     const createdCustomShirt = await tx.customShirtOrder.create({
                         data: {
-                            fabricColor: item.customShirtOrder.fabricColor,
+                            fabricColor: item.customShirtOrder.fabricColor || '#ffffff',
                             placements: {
                                 create: item.customShirtOrder.placements.map((p) => ({
                                     zone: p.zone,
                                     imageUrl: p.imageUrl,
-                                    x: p.x,
-                                    y: p.y,
-                                    scale: p.scale,
-                                    width: p.width,
-                                    height: p.height,
-                                    centerX: p.centerX,
-                                    centerY: p.centerY,
-                                    clipWidth: p.clipWidth,
-                                    clipHeight: p.clipHeight,
+                                    x: Number(p.x) || 0,
+                                    y: Number(p.y) || 0,
+                                    scale: Number(p.scale) || 1,
+                                    width: Number(p.width) || 400,
+                                    height: Number(p.height) || 400,
+                                    centerX: Number(p.centerX) || 1024,
+                                    centerY: Number(p.centerY) || 1024,
+                                    clipWidth: Number(p.clipWidth) || 800,
+                                    clipHeight: Number(p.clipHeight) || 1000,
                                 })),
                             },
                         },
@@ -68,9 +68,9 @@ let OrdersService = class OrdersService {
                 await tx.orderItem.create({
                     data: {
                         orderId: order.id,
-                        productId: item.productId ?? null,
+                        productId: item.productId ? Number(item.productId) : null,
                         designId: item.designId ?? null,
-                        customShirtOrderId: customShirtOrderId ?? null,
+                        customShirtOrderId: customShirtOrderId,
                         quantity: item.quantity,
                         size: item.size ?? null,
                         unitPrice: item.unitPrice,
@@ -94,6 +94,107 @@ let OrdersService = class OrdersService {
                     },
                 },
             });
+        });
+    }
+    async findAllForAdmin() {
+        return this.prisma.order.findMany({
+            orderBy: {
+                createdAt: 'desc',
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        first_name: true,
+                        last_name: true,
+                        role: true,
+                    },
+                },
+                address: true,
+                items: {
+                    include: {
+                        product: true,
+                        design: true,
+                        customShirtOrder: {
+                            include: {
+                                placements: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+    async findAdminOrderById(orderId) {
+        const order = await this.prisma.order.findUnique({
+            where: { id: orderId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        first_name: true,
+                        last_name: true,
+                        role: true,
+                    },
+                },
+                address: true,
+                items: {
+                    include: {
+                        product: true,
+                        design: true,
+                        customShirtOrder: {
+                            include: {
+                                placements: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!order) {
+            throw new common_1.NotFoundException(`Order with ID ${orderId} not found`);
+        }
+        return order;
+    }
+    async updateOrderStatus(orderId, dto) {
+        await this.findAdminOrderById(orderId);
+        return this.prisma.order.update({
+            where: { id: orderId },
+            data: {
+                status: dto.status,
+                ...(dto.paymentStatus && { paymentStatus: dto.paymentStatus }),
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        first_name: true,
+                        last_name: true,
+                        role: true,
+                    },
+                },
+                address: true,
+                items: {
+                    include: {
+                        product: true,
+                        design: true,
+                        customShirtOrder: {
+                            include: {
+                                placements: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+    async updateStatus(id, status) {
+        return this.prisma.order.update({
+            where: { id },
+            data: { status },
         });
     }
     async getUserOrders(userId) {

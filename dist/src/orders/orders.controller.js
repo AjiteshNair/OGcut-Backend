@@ -15,24 +15,72 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const admin_guard_1 = require("../auth/guards/admin.guard");
 const create_order_dto_1 = require("./dto/create-order.dto");
+const update_order_status_dto_1 = require("./dto/update-order-status.dto");
 const orders_service_1 = require("./orders.service");
 let OrdersController = class OrdersController {
     ordersService;
     constructor(ordersService) {
         this.ordersService = ordersService;
     }
+    async getAllOrdersForAdmin() {
+        return this.ordersService.findAllForAdmin();
+    }
+    async getAdminOrderById(id) {
+        return this.ordersService.findAdminOrderById(id);
+    }
+    async updateOrderStatus(id, dto) {
+        return this.ordersService.updateOrderStatus(id, dto);
+    }
+    updateStatus(id, status) {
+        return this.ordersService.updateStatus(id, status);
+    }
     async createOrder(req, dto) {
-        return this.ordersService.createOrder(req.user.id, dto);
+        console.log("hi");
+        console.log('Creating order for user:', req.user.userId.customShirtOrder);
+        return this.ordersService.createOrder(req.user.userId, dto);
     }
     async getUserOrders(req) {
-        return this.ordersService.getUserOrders(req.user.id);
+        return this.ordersService.getUserOrders(req.user.userId);
     }
     async getOrderById(req, id) {
-        return this.ordersService.getOrderById(req.user.id, id);
+        return this.ordersService.getOrderById(req.user.userId, id);
     }
 };
 exports.OrdersController = OrdersController;
+__decorate([
+    (0, common_1.UseGuards)(admin_guard_1.AdminGuard),
+    (0, common_1.Get)('admin/all'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "getAllOrdersForAdmin", null);
+__decorate([
+    (0, common_1.UseGuards)(admin_guard_1.AdminGuard),
+    (0, common_1.Get)('admin/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "getAdminOrderById", null);
+__decorate([
+    (0, common_1.UseGuards)(admin_guard_1.AdminGuard),
+    (0, common_1.Patch)('admin/:id/status'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_order_status_dto_1.UpdateOrderStatusDto]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "updateOrderStatus", null);
+__decorate([
+    (0, common_1.Patch)(':id/status'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('status')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Req)()),

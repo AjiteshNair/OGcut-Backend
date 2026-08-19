@@ -2,12 +2,21 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // 1. Set global API prefix so routes resolve to /api/...
   app.setGlobalPrefix('api');
+
+  app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    transform: true, // <--- Essential for @Type conversion
+    transformOptions: { enableImplicitConversion: true },
+  }),
+);
 
   // 2. Increase payload size limit for base64 image strings
   app.use(json({ limit: '50mb' }));

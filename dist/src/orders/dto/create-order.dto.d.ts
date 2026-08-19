@@ -12,11 +12,11 @@ export declare class DesignPlacementDto {
     clipHeight: number;
 }
 export declare class CustomShirtOrderDto {
-    fabricColor: string;
+    fabricColor?: string;
     placements: DesignPlacementDto[];
 }
 export declare class CreateOrderItemDto {
-    productId?: number;
+    productId?: string;
     designId?: string;
     customShirtOrder?: CustomShirtOrderDto;
     quantity: number;

@@ -36,38 +36,47 @@ __decorate([
 ], DesignPlacementDto.prototype, "imageUrl", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "x", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "y", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "scale", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "width", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "height", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "centerX", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "centerY", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "clipWidth", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], DesignPlacementDto.prototype, "clipHeight", void 0);
 class CustomShirtOrderDto {
@@ -76,6 +85,7 @@ class CustomShirtOrderDto {
 }
 exports.CustomShirtOrderDto = CustomShirtOrderDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CustomShirtOrderDto.prototype, "fabricColor", void 0);
@@ -96,8 +106,8 @@ class CreateOrderItemDto {
 exports.CreateOrderItemDto = CreateOrderItemDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
 ], CreateOrderItemDto.prototype, "productId", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
@@ -106,12 +116,14 @@ __decorate([
 ], CreateOrderItemDto.prototype, "designId", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
     (0, class_validator_1.ValidateNested)(),
     (0, class_transformer_1.Type)(() => CustomShirtOrderDto),
     __metadata("design:type", CustomShirtOrderDto)
 ], CreateOrderItemDto.prototype, "customShirtOrder", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "quantity", void 0);
 __decorate([
@@ -121,6 +133,7 @@ __decorate([
 ], CreateOrderItemDto.prototype, "size", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "unitPrice", void 0);
 class CreateOrderDto {

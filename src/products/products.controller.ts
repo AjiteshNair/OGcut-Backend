@@ -13,6 +13,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
+
   async getProducts(@Query('category') category?: string) {
     return this.productsService.findAll(category);
   }
