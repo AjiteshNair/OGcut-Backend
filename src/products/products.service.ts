@@ -1,70 +1,55 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-export type ProductResponse = {
-  id: string;
+export interface ProductResponse {
+  id: number;
   name: string;
-  base_price: number;
-  category: string;
-  tagline: string;
-  design_type: string;
-  graphic_url: string | null;
-  mockup_url: string | null;
-  target_zone: string;
-};
+  desc: string;
+  price: number;
+  type: string;
+  isActive: boolean;
+  image: string | null;
+}
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(category?: string): Promise<ProductResponse[]> {
+  async findAll(category?: string): Promise<ProductResponse[] | null> {
     const products = await this.prisma.product.findMany({
-      where: category
-        ? {
-            category: {
-              name: {
-                equals: category,
-                mode: 'insensitive',
-              },
-            },
-          }
-        : undefined,
+      where: {
+        isActive: true,
+      },
       include: {
-        category: true,
+        images: {
+          where: {
+            sortWeight: 0,
+          },
+          take: 1,
+        },
+      },
+      orderBy: {
+        id: 'asc',
       },
     });
 
+    if (!products || products.length === 0) {
+      return null;
+    }
+
     return products.map((product) => ({
-      id: String(product.id),
+      id: product.id,
       name: product.name,
-      base_price: Number(product.price),
-      category: product.category.name,
-      tagline: product.description,
-      design_type: product.designType || 'graphic_only',
-      graphic_url: product.graphicUrl || (product.images[0] ?? null),
-      mockup_url: product.mockupUrl || (product.images[0] ?? null),
-      target_zone: product.targetZone || 'front',
+      desc: product.desc,
+      price: Number(product.price),
+      type: product.type,
+      isActive: product.isActive,
+      image: product.images.length > 0 ? product.images[0].imgurl : null,
     }));
   }
 
   async findOne(id: number): Promise<ProductResponse | null> {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-      include: { category: true },
-    });
-
-    if (!product) return null;
-
-    return {
-      id: String(product.id),
-      name: product.name,
-      base_price: Number(product.price),
-      category: product.category.name,
-      tagline: product.description,
-      design_type: product.designType || 'graphic_only',
-      graphic_url: product.graphicUrl || (product.images[0] ?? null),
-      mockup_url: product.mockupUrl || (product.images[0] ?? null),
-      target_zone: product.targetZone || 'front',
-    };
+    console.log('inside findOne')
+    return null;
   }
 }

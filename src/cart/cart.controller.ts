@@ -1,18 +1,31 @@
 import {
-  Controller,
-  Post,
-  Body,
-  Logger,
-  Get,
-  Param,
-  Patch,
-  ParseIntPipe,
-  DefaultValuePipe,
-  Query,
   BadRequestException,
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Logger,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CartService, CustomizationPayload } from './cart.service';
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId?: number;
+    id?: number;
+    sub?: number;
+    email: string;
+    role: string;
+  };
+}
 
 @Controller()
 export class CartController {
@@ -21,15 +34,34 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Post('cart/add')
-  async addToCart(@Body() payload: CustomizationPayload) {
+  @UseGuards(JwtAuthGuard)
+  async addToCart(
+    @Req() req: AuthenticatedRequest,
+    @Body() payload: CustomizationPayload,
+  ) {
     this.logger.log('--- Received POST /cart/add ---');
     this.logger.log(`Keys in payload: ${Object.keys(payload || {}).join(', ')}`);
 
-    const order = await this.cartService.processAndSaveOrder(payload);
+    // Extract logged-in user ID if not explicitly provided in body
+    const userId =
+      payload.userId ??
+      req.user?.userId ??
+      req.user?.id ??
+      req.user?.sub;
+
+    if (!userId) {
+      throw new BadRequestException('User ID is required to process order.');
+    }
+
+    const order = await this.cartService.processAndSaveOrder({
+      ...payload,
+      userId: Number(userId),
+    });
 
     return {
       success: true,
       orderId: order.id,
+      orderCode: order.orderCode,
       order,
     };
   }
@@ -43,13 +75,13 @@ export class CartController {
   }
 
   @Get('admin/orders/:id')
-  async getAdminOrderById(@Param('id') id: string) {
+  async getAdminOrderById(@Param('id', ParseIntPipe) id: number) {
     return this.cartService.getAdminOrderById(id);
   }
 
   @Patch('admin/orders/:id/status')
   async updateOrderStatus(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('status') status: OrderStatus,
   ) {
     if (!status || !Object.values(OrderStatus).includes(status)) {

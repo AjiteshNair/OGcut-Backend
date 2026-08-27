@@ -19,50 +19,37 @@ let ProductsService = class ProductsService {
     }
     async findAll(category) {
         const products = await this.prisma.product.findMany({
-            where: category
-                ? {
-                    category: {
-                        name: {
-                            equals: category,
-                            mode: 'insensitive',
-                        },
-                    },
-                }
-                : undefined,
+            where: {
+                isActive: true,
+            },
             include: {
-                category: true,
+                images: {
+                    where: {
+                        sortWeight: 0,
+                    },
+                    take: 1,
+                },
+            },
+            orderBy: {
+                id: 'asc',
             },
         });
+        if (!products || products.length === 0) {
+            return null;
+        }
         return products.map((product) => ({
-            id: String(product.id),
+            id: product.id,
             name: product.name,
-            base_price: Number(product.price),
-            category: product.category.name,
-            tagline: product.description,
-            design_type: product.designType || 'graphic_only',
-            graphic_url: product.graphicUrl || (product.images[0] ?? null),
-            mockup_url: product.mockupUrl || (product.images[0] ?? null),
-            target_zone: product.targetZone || 'front',
+            desc: product.desc,
+            price: Number(product.price),
+            type: product.type,
+            isActive: product.isActive,
+            image: product.images.length > 0 ? product.images[0].imgurl : null,
         }));
     }
     async findOne(id) {
-        const product = await this.prisma.product.findUnique({
-            where: { id },
-            include: { category: true },
-        });
-        if (!product)
-            return null;
-        return {
-            id: String(product.id),
-            name: product.name,
-            base_price: Number(product.price),
-            category: product.category.name,
-            tagline: product.description,
-            design_type: product.designType || 'graphic_only',
-            graphic_url: product.graphicUrl || (product.images[0] ?? null),
-            mockup_url: product.mockupUrl || (product.images[0] ?? null),
-            target_zone: product.targetZone || 'front',
-        };
+        console.log('inside findOne');
+        return null;
     }
 };
 exports.ProductsService = ProductsService;

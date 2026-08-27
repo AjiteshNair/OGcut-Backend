@@ -13,8 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartService = exports.CustomizationPayload = exports.CustomizationPlacementDto = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
-const storage_service_1 = require("../storage/storage.service");
 const prisma_service_1 = require("../prisma/prisma.service");
+const storage_service_1 = require("../storage/storage.service");
 class CustomizationPlacementDto {
     zone;
     image;
@@ -25,8 +25,10 @@ exports.CustomizationPlacementDto = CustomizationPlacementDto;
 class CustomizationPayload {
     fabricColor;
     userId;
-    addressId;
+    productId;
+    address;
     unitPrice;
+    size;
     placements;
 }
 exports.CustomizationPayload = CustomizationPayload;
@@ -50,17 +52,14 @@ let CartService = CartService_1 = class CartService {
                         select: {
                             id: true,
                             email: true,
-                            first_name: true,
-                            last_name: true,
+                            firstName: true,
+                            lastName: true,
                         },
                     },
-                    address: true,
                     items: {
                         include: {
                             product: true,
-                            customShirtOrder: {
-                                include: { placements: true },
-                            },
+                            placements: true,
                         },
                     },
                 },
@@ -85,17 +84,14 @@ let CartService = CartService_1 = class CartService {
                     select: {
                         id: true,
                         email: true,
-                        first_name: true,
-                        last_name: true,
+                        firstName: true,
+                        lastName: true,
                     },
                 },
-                address: true,
                 items: {
                     include: {
                         product: true,
-                        customShirtOrder: {
-                            include: { placements: true },
-                        },
+                        placements: true,
                     },
                 },
             },
@@ -116,7 +112,7 @@ let CartService = CartService_1 = class CartService {
         });
     }
     async processAndSaveOrder(payload) {
-        const { fabricColor, placements, userId, addressId, unitPrice = 0 } = payload;
+        const { placements, userId, productId, address, unitPrice = 0, size = 'M', } = payload;
         if (!placements || placements.length === 0) {
             throw new common_1.BadRequestException('At least one design placement is required.');
         }
@@ -126,42 +122,40 @@ let CartService = CartService_1 = class CartService {
                 throw new common_1.BadRequestException(`Missing base64 image string in placement index ${index}`);
             }
             const fileName = `custom-${placement.zone}-${Date.now()}-${index}.png`;
-            this.logger.log(`Uploading ${placement.zone} image to Supabase: ${fileName}`);
+            this.logger.log(`Uploading ${placement.zone} image to Storage: ${fileName}`);
             const imageUrl = await this.storageService.uploadBase64Image(placement.image, 'shirt-designs', `custom-orders/${fileName}`);
             const coords = placement.coordinates || {};
-            const bounds = placement.printZoneBounds || {};
+            const zoneKey = placement.zone.toLowerCase();
+            const validZone = Object.values(client_1.PlacementZone).includes(zoneKey)
+                ? zoneKey
+                : client_1.PlacementZone.front;
             return {
-                zone: placement.zone || 'front',
-                imageUrl,
-                x: Number(coords.x || 0),
-                y: Number(coords.y || 0),
-                scale: Number(coords.scale || 1),
-                width: Number(coords.width || 0),
-                height: Number(coords.height || 0),
-                centerX: Number(bounds.centerX || 0),
-                centerY: Number(bounds.centerY || 0),
-                clipWidth: Number(bounds.clipWidth || 0),
-                clipHeight: Number(bounds.clipHeight || 0),
+                place: validZone,
+                imgurl: imageUrl,
+                xvalue: Number(coords.x || 0),
+                yvalue: Number(coords.y || 0),
+                zoom: Number(coords.scale || 1.0),
+                width: coords.width ? Number(coords.width) : null,
+                height: coords.height ? Number(coords.height) : null,
             };
         }));
+        const orderCode = `ORD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
         const newOrder = await this.prisma.order.create({
             data: {
-                userId: userId || null,
-                addressId: addressId || null,
-                status: client_1.OrderStatus.RECEIVED,
+                orderCode,
+                uid: userId,
+                address: address ?? {},
+                status: client_1.OrderStatus.PENDING,
                 totalAmount: unitPrice,
                 items: {
                     create: [
                         {
+                            pid: productId,
                             quantity: 1,
+                            size: size,
                             unitPrice: unitPrice,
-                            customShirtOrder: {
-                                create: {
-                                    fabricColor: fabricColor || 'white',
-                                    placements: {
-                                        create: placementData,
-                                    },
-                                },
+                            placements: {
+                                create: placementData,
                             },
                         },
                     ],
@@ -170,9 +164,7 @@ let CartService = CartService_1 = class CartService {
             include: {
                 items: {
                     include: {
-                        customShirtOrder: {
-                            include: { placements: true },
-                        },
+                        placements: true,
                     },
                 },
             },

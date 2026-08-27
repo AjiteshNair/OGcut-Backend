@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// USER & ADDRESS MANAGEMENT
+// ==========================================
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String?
+  role      Role      @default(CUSTOMER)
+  phone     String?
+  addresses Address[]
+  orders    Order[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String?  // e.g., "Home", "Work"
+  name      String
+  line1     String   @map("l1")
+  line2     String?  @map("l2")
+  city      String
+  state     String
+  pincode   String   @map("pin")
+  phone     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// ==========================================
+// PRODUCT CATALOG & MEDIA
+// ==========================================
+
+model Product {
+  id          Int            @id @default(autoincrement())
+  name        String
+  description String        @db.Text
+  price       Decimal        @db.Decimal(10, 2)
+  type        ProductType    @default(STANDARD)
+  images      ProductImage[]
+  orderItems  OrderItem[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("products")
+}
+
+model ProductImage {
+  id         String   @id @default(uuid())
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl   String   @map("imgurl")
+  sortWeight Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@map("product_images")
+}
+
+enum ProductType {
+  STANDARD
+  CUSTOMIZABLE
+}
+
+// ==========================================
+// ORDER & FULFILLMENT ARCHITECTURE
+// ==========================================
+
+model Order {
+  id            String      @id @default(uuid())
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Embedded JSON address capture to preserve historical shipping details if Address is deleted
+  shippingAddress Json      @map("address")
+  
+  coupon        String?
+  status        OrderStatus @default(PENDING)
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String            @id @default(uuid())
+  orderId    String
+  order      Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  Int?
+  product    Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  quantity   Int               @default(1)
+  size       String?           // e.g., "S", "M", "L", "XL"
+  placements CustomPlacement[]
+  createdAt  DateTime          @default(now())
+
+  @@map("order_items")
+}
+
+model CustomPlacement {
+  id          String        @id @default(uuid())
+  orderItemId String
+  orderItem   OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  place       PlacementZone
+  xValue      Float
+  yValue      Float
+  zoom        Float         @default(1.0)
+  imageUrl    String        @map("imgurl")
+  height      Float?
+  width       Float?
+  createdAt   DateTime      @default(now())
+
+  @@index([orderItemId])
+  @@map("custom_placements")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PRINTING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PlacementZone {
+  FRONT     @map("front")
+  BACK      @map("back")
+  LEFT      @map("left")
+  RIGHT     @map("right")
+}

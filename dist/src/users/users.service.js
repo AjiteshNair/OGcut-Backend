@@ -17,31 +17,22 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async toggleSaveDesign(userId, productId) {
-        const existing = await this.prisma.savedDesign.findFirst({
-            where: {
-                user_id: userId,
-                product_id: productId,
+    async getUserProfile(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                createdAt: true,
             },
         });
-        if (existing) {
-            await this.prisma.savedDesign.delete({
-                where: { id: existing.id },
-            });
-            return { saved: false };
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
         }
-        else {
-            await this.prisma.savedDesign.create({
-                data: { user_id: userId, product_id: productId },
-            });
-            return { saved: true };
-        }
-    }
-    async getSavedDesigns(userId) {
-        return this.prisma.savedDesign.findMany({
-            where: { user_id: userId },
-            include: { product: true },
-        });
+        return user;
     }
 };
 exports.UsersService = UsersService;

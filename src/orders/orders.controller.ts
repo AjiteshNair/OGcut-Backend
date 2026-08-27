@@ -44,23 +44,13 @@ export class OrdersController {
     return this.ordersService.updateOrderStatus(id, dto);
   }
 
-  @Patch(':id/status')
-  updateStatus(
-    @Param('id') id: string,
-    @Body('status') status: string,
-  ) {
-    return this.ordersService.updateStatus(id, status);
-  }
-
-
   // ==========================================
   // CUSTOMER / USER ROUTES
   // ==========================================
 
-  @Post()
+@Post()
   async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
-    console.log("hi")
-    console.log('Creating order for user:', req.user.userId.customShirtOrder);
+    console.log('Creating order for user ID:', req.user.userId);
     return this.ordersService.createOrder(req.user.userId, dto);
   }
 

@@ -1,29 +1,23 @@
-export declare class DesignPlacementDto {
-    zone: string;
-    imageUrl: string;
-    x: number;
-    y: number;
-    scale: number;
-    width: number;
-    height: number;
-    centerX: number;
-    centerY: number;
-    clipWidth: number;
-    clipHeight: number;
-}
-export declare class CustomShirtOrderDto {
-    fabricColor?: string;
-    placements: DesignPlacementDto[];
+import { PlacementZone } from '@prisma/client';
+export declare class PlacementDto {
+    place: PlacementZone;
+    imgurl: string;
+    xvalue: number;
+    yvalue: number;
+    zoom: number;
+    width?: number;
+    height?: number;
 }
 export declare class CreateOrderItemDto {
-    productId?: string;
-    designId?: string;
-    customShirtOrder?: CustomShirtOrderDto;
+    productId: number;
     quantity: number;
-    size?: string;
+    size: string;
     unitPrice: number;
+    placements?: PlacementDto[];
 }
 export declare class CreateOrderDto {
-    addressId: string;
+    addressId?: number;
+    address?: Record<string, any>;
+    coupon?: string;
     items: CreateOrderItemDto[];
 }

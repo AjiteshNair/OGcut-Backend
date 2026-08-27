@@ -23,34 +23,23 @@ let UsersController = class UsersController {
         this.usersService = usersService;
     }
     getProfile(req) {
-        return req.user;
-    }
-    toggleSaveDesign(req, productId) {
-        return this.usersService.toggleSaveDesign(req.user.userId, productId);
+        return this.usersService.getUserProfile(req.user.userId);
     }
 };
 exports.UsersController = UsersController;
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('profile'),
-    __param(0, (0, common_1.Request)()),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current logged-in user details' }),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getProfile", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)('saved-designs/toggle'),
-    __param(0, (0, common_1.Request)()),
-    __param(1, (0, common_1.Body)('productId')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Number]),
-    __metadata("design:returntype", void 0)
-], UsersController.prototype, "toggleSaveDesign", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),
     (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [users_service_1.UsersService])
 ], UsersController);
 //# sourceMappingURL=users.controller.js.map

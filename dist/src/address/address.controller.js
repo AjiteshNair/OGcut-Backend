@@ -23,15 +23,13 @@ let AddressController = class AddressController {
         this.addressService = addressService;
     }
     async create(req, dto) {
-        console.log('Decoded Auth User:', req.user);
-        const userId = req.user?.id || req.user?.sub;
         return this.addressService.create(req.user.userId, dto);
     }
     async findAllByUser(req) {
-        return this.addressService.findAllByUser(req.user.id);
+        return this.addressService.findAllByUser(req.user.userId);
     }
     async delete(req, id) {
-        return this.addressService.delete(req.user.id, id);
+        return this.addressService.delete(req.user.userId, id);
     }
 };
 exports.AddressController = AddressController;
@@ -53,9 +51,9 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], AddressController.prototype, "delete", null);
 exports.AddressController = AddressController = __decorate([

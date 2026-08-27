@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -26,53 +27,29 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
-        password_hash: hashedPassword,
-        first_name: dto.first_name,
-        last_name: dto.last_name,
+        passwordHash: hashedPassword,
+        firstName: dto.first_name,
+        lastName: dto.last_name ?? null, // Store null if last_name is undefined
       },
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        role: user.role,
-      },
-    };
+    return this.generateAuthResult(user);
   }
 
-  async validateOAuthUser(details: { email: string; first_name: string; last_name: string }) {
-    let user = await this.prisma.user.findUnique({
+  async validateOAuthUser(details: { email: string; first_name: string; last_name?: string }) {
+    // Atomic upsert prevents race conditions on duplicate OAuth logins
+    const user = await this.prisma.user.upsert({
       where: { email: details.email },
+      update: {}, // No updates needed if user exists
+      create: {
+        email: details.email,
+        firstName: details.first_name || 'User',
+        lastName: details.last_name ?? null,
+        passwordHash: '',
+      },
     });
 
-    if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          email: details.email,
-          first_name: details.first_name || 'User',
-          last_name: details.last_name || '',
-          password_hash: '', // OAuth users don't have password hashes
-        },
-      });
-    }
-
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        role: user.role,
-      },
-    };
+    return this.generateAuthResult(user);
   }
 
   async login(dto: LoginDto) {
@@ -80,17 +57,21 @@ export class AuthService {
       where: { email: dto.email },
     });
 
-    // Handle missing user OR user created via OAuth without a password
-    if (!user || !user.password_hash) {
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    return this.generateAuthResult(user);
+  }
+
+  // Helper method to keep responses consistent and DRY
+  private async generateAuthResult(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     return {
@@ -98,8 +79,8 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        first_name: user.firstName,
+        last_name: user.lastName,
         role: user.role,
       },
     };

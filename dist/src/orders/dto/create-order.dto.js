@@ -9,126 +9,77 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateOrderDto = exports.CreateOrderItemDto = exports.CustomShirtOrderDto = exports.DesignPlacementDto = void 0;
+exports.CreateOrderDto = exports.CreateOrderItemDto = exports.PlacementDto = void 0;
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
-class DesignPlacementDto {
-    zone;
-    imageUrl;
-    x;
-    y;
-    scale;
+const client_1 = require("@prisma/client");
+class PlacementDto {
+    place;
+    imgurl;
+    xvalue;
+    yvalue;
+    zoom;
     width;
     height;
-    centerX;
-    centerY;
-    clipWidth;
-    clipHeight;
 }
-exports.DesignPlacementDto = DesignPlacementDto;
+exports.PlacementDto = PlacementDto;
+__decorate([
+    (0, class_validator_1.IsEnum)(client_1.PlacementZone),
+    __metadata("design:type", String)
+], PlacementDto.prototype, "place", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
-], DesignPlacementDto.prototype, "zone", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], DesignPlacementDto.prototype, "imageUrl", void 0);
+], PlacementDto.prototype, "imgurl", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "x", void 0);
+], PlacementDto.prototype, "xvalue", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "y", void 0);
+], PlacementDto.prototype, "yvalue", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "scale", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_transformer_1.Type)(() => Number),
-    __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "width", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_transformer_1.Type)(() => Number),
-    __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "height", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_transformer_1.Type)(() => Number),
-    __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "centerX", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_transformer_1.Type)(() => Number),
-    __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "centerY", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_transformer_1.Type)(() => Number),
-    __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "clipWidth", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_transformer_1.Type)(() => Number),
-    __metadata("design:type", Number)
-], DesignPlacementDto.prototype, "clipHeight", void 0);
-class CustomShirtOrderDto {
-    fabricColor;
-    placements;
-}
-exports.CustomShirtOrderDto = CustomShirtOrderDto;
+], PlacementDto.prototype, "zoom", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CustomShirtOrderDto.prototype, "fabricColor", void 0);
+    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
+    __metadata("design:type", Number)
+], PlacementDto.prototype, "width", void 0);
 __decorate([
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ValidateNested)({ each: true }),
-    (0, class_transformer_1.Type)(() => DesignPlacementDto),
-    __metadata("design:type", Array)
-], CustomShirtOrderDto.prototype, "placements", void 0);
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
+    __metadata("design:type", Number)
+], PlacementDto.prototype, "height", void 0);
 class CreateOrderItemDto {
     productId;
-    designId;
-    customShirtOrder;
     quantity;
     size;
     unitPrice;
+    placements;
 }
 exports.CreateOrderItemDto = CreateOrderItemDto;
 __decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
+    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
+    __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "productId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateOrderItemDto.prototype, "designId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsObject)(),
-    (0, class_validator_1.ValidateNested)(),
-    (0, class_transformer_1.Type)(() => CustomShirtOrderDto),
-    __metadata("design:type", CustomShirtOrderDto)
-], CreateOrderItemDto.prototype, "customShirtOrder", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "quantity", void 0);
 __decorate([
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateOrderItemDto.prototype, "size", void 0);
 __decorate([
@@ -136,15 +87,36 @@ __decorate([
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "unitPrice", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => PlacementDto),
+    __metadata("design:type", Array)
+], CreateOrderItemDto.prototype, "placements", void 0);
 class CreateOrderDto {
     addressId;
+    address;
+    coupon;
     items;
 }
 exports.CreateOrderDto = CreateOrderDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
+    __metadata("design:type", Number)
+], CreateOrderDto.prototype, "addressId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsObject)(),
+    __metadata("design:type", Object)
+], CreateOrderDto.prototype, "address", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreateOrderDto.prototype, "addressId", void 0);
+], CreateOrderDto.prototype, "coupon", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ValidateNested)({ each: true }),

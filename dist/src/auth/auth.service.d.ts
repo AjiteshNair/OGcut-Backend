@@ -9,9 +9,9 @@ export declare class AuthService {
     register(dto: RegisterDto): Promise<{
         access_token: string;
         user: {
-            id: string;
+            id: number;
             email: string;
-            first_name: string | null;
+            first_name: string;
             last_name: string | null;
             role: import("@prisma/client").$Enums.Role;
         };
@@ -19,13 +19,13 @@ export declare class AuthService {
     validateOAuthUser(details: {
         email: string;
         first_name: string;
-        last_name: string;
+        last_name?: string;
     }): Promise<{
         access_token: string;
         user: {
-            id: string;
+            id: number;
             email: string;
-            first_name: string | null;
+            first_name: string;
             last_name: string | null;
             role: import("@prisma/client").$Enums.Role;
         };
@@ -33,11 +33,12 @@ export declare class AuthService {
     login(dto: LoginDto): Promise<{
         access_token: string;
         user: {
-            id: string;
+            id: number;
             email: string;
-            first_name: string | null;
+            first_name: string;
             last_name: string | null;
             role: import("@prisma/client").$Enums.Role;
         };
     }>;
+    private generateAuthResult;
 }

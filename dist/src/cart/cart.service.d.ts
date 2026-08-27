@@ -1,6 +1,6 @@
 import { OrderStatus } from '@prisma/client';
-import { StorageService } from '../storage/storage.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 export declare class CustomizationPlacementDto {
     zone: string;
     image: string;
@@ -8,10 +8,10 @@ export declare class CustomizationPlacementDto {
         x: number;
         y: number;
         scale: number;
-        width: number;
-        height: number;
+        width?: number;
+        height?: number;
     };
-    printZoneBounds: {
+    printZoneBounds?: {
         centerX: number;
         centerY: number;
         clipWidth: number;
@@ -20,9 +20,11 @@ export declare class CustomizationPlacementDto {
 }
 export declare class CustomizationPayload {
     fabricColor: string;
-    userId?: string;
-    addressId?: string;
+    userId: number;
+    productId: number;
+    address: Record<string, any>;
     unitPrice?: number;
+    size?: string;
     placements: CustomizationPlacementDto[];
 }
 export declare class CartService {
@@ -33,83 +35,50 @@ export declare class CartService {
     getAdminOrders(page?: number, limit?: number): Promise<{
         orders: ({
             user: {
-                id: string;
+                id: number;
                 email: string;
-                first_name: string | null;
-                last_name: string | null;
-            } | null;
-            address: {
-                id: string;
-                userId: string;
-                fullName: string;
-                phone: string;
-                label: string | null;
-                line1: string;
-                line2: string | null;
-                city: string;
-                state: string;
-                pincode: string;
-                isDefault: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-            } | null;
+                firstName: string;
+                lastName: string | null;
+            };
             items: ({
                 product: {
                     name: string;
                     id: number;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    description: string;
+                    isActive: boolean;
+                    desc: string;
                     price: import("@prisma/client-runtime-utils").Decimal;
-                    images: string[];
-                    inventory: number;
-                    designType: string;
-                    graphicUrl: string | null;
-                    mockupUrl: string | null;
-                    targetZone: string;
-                    categoryId: number;
-                } | null;
-                customShirtOrder: ({
-                    placements: {
-                        id: string;
-                        imageUrl: string;
-                        customShirtOrderId: string;
-                        zone: string;
-                        x: number;
-                        y: number;
-                        scale: number;
-                        width: number;
-                        height: number;
-                        centerX: number;
-                        centerY: number;
-                        clipWidth: number;
-                        clipHeight: number;
-                    }[];
-                } & {
-                    id: string;
-                    createdAt: Date;
-                    fabricColor: string;
-                }) | null;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
             } & {
-                id: string;
-                createdAt: Date;
-                orderId: string;
-                productId: number | null;
-                designId: string | null;
-                customShirtOrderId: string | null;
+                id: number;
+                pid: number;
+                oid: number;
                 quantity: number;
-                size: string | null;
+                size: string;
                 unitPrice: import("@prisma/client-runtime-utils").Decimal;
             })[];
         } & {
-            id: string;
-            userId: string | null;
+            id: number;
             createdAt: Date;
-            updatedAt: Date;
-            addressId: string | null;
+            address: import("@prisma/client/runtime/client").JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
             status: import("@prisma/client").$Enums.OrderStatus;
-            paymentStatus: import("@prisma/client").$Enums.PaymentStatus;
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
         })[];
         pagination: {
             total: number;
@@ -118,138 +87,96 @@ export declare class CartService {
             totalPages: number;
         };
     }>;
-    getAdminOrderById(id: string): Promise<{
+    getAdminOrderById(id: number): Promise<{
         user: {
-            id: string;
+            id: number;
             email: string;
-            first_name: string | null;
-            last_name: string | null;
-        } | null;
-        address: {
-            id: string;
-            userId: string;
-            fullName: string;
-            phone: string;
-            label: string | null;
-            line1: string;
-            line2: string | null;
-            city: string;
-            state: string;
-            pincode: string;
-            isDefault: boolean;
-            createdAt: Date;
-            updatedAt: Date;
-        } | null;
+            firstName: string;
+            lastName: string | null;
+        };
         items: ({
             product: {
                 name: string;
                 id: number;
-                createdAt: Date;
-                updatedAt: Date;
-                description: string;
+                isActive: boolean;
+                desc: string;
                 price: import("@prisma/client-runtime-utils").Decimal;
-                images: string[];
-                inventory: number;
-                designType: string;
-                graphicUrl: string | null;
-                mockupUrl: string | null;
-                targetZone: string;
-                categoryId: number;
-            } | null;
-            customShirtOrder: ({
-                placements: {
-                    id: string;
-                    imageUrl: string;
-                    customShirtOrderId: string;
-                    zone: string;
-                    x: number;
-                    y: number;
-                    scale: number;
-                    width: number;
-                    height: number;
-                    centerX: number;
-                    centerY: number;
-                    clipWidth: number;
-                    clipHeight: number;
-                }[];
-            } & {
-                id: string;
-                createdAt: Date;
-                fabricColor: string;
-            }) | null;
+                type: import("@prisma/client").$Enums.ProductType;
+            };
+            placements: {
+                id: number;
+                imgurl: string;
+                oiid: number;
+                place: import("@prisma/client").$Enums.PlacementZone;
+                xvalue: number;
+                yvalue: number;
+                zoom: number;
+                height: number | null;
+                width: number | null;
+            }[];
         } & {
-            id: string;
-            createdAt: Date;
-            orderId: string;
-            productId: number | null;
-            designId: string | null;
-            customShirtOrderId: string | null;
+            id: number;
+            pid: number;
+            oid: number;
             quantity: number;
-            size: string | null;
+            size: string;
             unitPrice: import("@prisma/client-runtime-utils").Decimal;
         })[];
     } & {
-        id: string;
-        userId: string | null;
+        id: number;
         createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
+        address: import("@prisma/client/runtime/client").JsonValue;
+        uid: number;
+        orderCode: string;
+        coupon: string | null;
         status: import("@prisma/client").$Enums.OrderStatus;
-        paymentStatus: import("@prisma/client").$Enums.PaymentStatus;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
+        trackingNumber: string | null;
+        paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
     }>;
-    updateOrderStatus(id: string, status: OrderStatus): Promise<{
-        id: string;
-        userId: string | null;
+    updateOrderStatus(id: number, status: OrderStatus): Promise<{
+        id: number;
         createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
+        address: import("@prisma/client/runtime/client").JsonValue;
+        uid: number;
+        orderCode: string;
+        coupon: string | null;
         status: import("@prisma/client").$Enums.OrderStatus;
-        paymentStatus: import("@prisma/client").$Enums.PaymentStatus;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
+        trackingNumber: string | null;
+        paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
     }>;
     processAndSaveOrder(payload: CustomizationPayload): Promise<{
         items: ({
-            customShirtOrder: ({
-                placements: {
-                    id: string;
-                    imageUrl: string;
-                    customShirtOrderId: string;
-                    zone: string;
-                    x: number;
-                    y: number;
-                    scale: number;
-                    width: number;
-                    height: number;
-                    centerX: number;
-                    centerY: number;
-                    clipWidth: number;
-                    clipHeight: number;
-                }[];
-            } & {
-                id: string;
-                createdAt: Date;
-                fabricColor: string;
-            }) | null;
+            placements: {
+                id: number;
+                imgurl: string;
+                oiid: number;
+                place: import("@prisma/client").$Enums.PlacementZone;
+                xvalue: number;
+                yvalue: number;
+                zoom: number;
+                height: number | null;
+                width: number | null;
+            }[];
         } & {
-            id: string;
-            createdAt: Date;
-            orderId: string;
-            productId: number | null;
-            designId: string | null;
-            customShirtOrderId: string | null;
+            id: number;
+            pid: number;
+            oid: number;
             quantity: number;
-            size: string | null;
+            size: string;
             unitPrice: import("@prisma/client-runtime-utils").Decimal;
         })[];
     } & {
-        id: string;
-        userId: string | null;
+        id: number;
         createdAt: Date;
-        updatedAt: Date;
-        addressId: string | null;
+        address: import("@prisma/client/runtime/client").JsonValue;
+        uid: number;
+        orderCode: string;
+        coupon: string | null;
         status: import("@prisma/client").$Enums.OrderStatus;
-        paymentStatus: import("@prisma/client").$Enums.PaymentStatus;
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
+        trackingNumber: string | null;
+        paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
     }>;
 }

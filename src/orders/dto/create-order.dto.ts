@@ -1,99 +1,84 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { PlacementZone } from '@prisma/client';
 
-export class DesignPlacementDto {
+export class PlacementDto {
+  @IsEnum(PlacementZone)
+  place!: PlacementZone;
+
   @IsString()
-  zone!: string;
-
-  @IsString()
-  imageUrl!: string;
+  @IsNotEmpty()
+  imgurl!: string;
 
   @IsNumber()
   @Type(() => Number)
-  x!: number;
+  xvalue!: number;
 
   @IsNumber()
   @Type(() => Number)
-  y!: number;
+  yvalue!: number;
 
   @IsNumber()
   @Type(() => Number)
-  scale!: number;
+  zoom!: number;
 
-  @IsNumber()
-  @Type(() => Number)
-  width!: number;
-
-  @IsNumber()
-  @Type(() => Number)
-  height!: number;
-
-  @IsNumber()
-  @Type(() => Number)
-  centerX!: number;
-
-  @IsNumber()
-  @Type(() => Number)
-  centerY!: number;
-
-  @IsNumber()
-  @Type(() => Number)
-  clipWidth!: number;
-
-  @IsNumber()
-  @Type(() => Number)
-  clipHeight!: number;
-}
-
-export class CustomShirtOrderDto {
   @IsOptional()
-  @IsString()
-  fabricColor?: string;
+  @IsNumber()
+  @Type(() => Number)
+  width?: number;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => DesignPlacementDto)
-  placements!: DesignPlacementDto[];
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  height?: number;
 }
 
 export class CreateOrderItemDto {
-  @IsOptional()
-  @IsString()
-  productId?: string;
-
-  @IsOptional()
-  @IsString()
-  designId?: string;
-
-  @IsOptional()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => CustomShirtOrderDto)
-  customShirtOrder?: CustomShirtOrderDto;
+  @IsNumber()
+  @Type(() => Number)
+  productId!: number;
 
   @IsNumber()
   @Type(() => Number)
   quantity!: number;
 
-  @IsOptional()
   @IsString()
-  size?: string;
+  @IsNotEmpty()
+  size!: string;
 
   @IsNumber()
   @Type(() => Number)
   unitPrice!: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PlacementDto)
+  placements?: PlacementDto[];
 }
 
 export class CreateOrderDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  addressId?: number;
+
+  @IsOptional()
+  @IsObject()
+  address?: Record<string, any>;
+
+  @IsOptional()
   @IsString()
-  addressId!: string;
+  coupon?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

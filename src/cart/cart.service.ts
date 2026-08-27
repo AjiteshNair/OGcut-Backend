@@ -1,19 +1,24 @@
-import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
-import { OrderStatus } from '@prisma/client';
-import { StorageService } from '../storage/storage.service';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { OrderStatus, PlacementZone } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 
 export class CustomizationPlacementDto {
-  zone!: string;
+  zone!: string; // 'front' | 'back' | 'left' | 'right'
   image!: string; // Base64 Data URL
   coordinates!: {
     x: number;
     y: number;
     scale: number;
-    width: number;
-    height: number;
+    width?: number;
+    height?: number;
   };
-  printZoneBounds!: {
+  printZoneBounds?: {
     centerX: number;
     centerY: number;
     clipWidth: number;
@@ -23,9 +28,11 @@ export class CustomizationPlacementDto {
 
 export class CustomizationPayload {
   fabricColor!: string;
-  userId?: string;
-  addressId?: string;
+  userId!: number;
+  productId!: number;
+  address!: Record<string, any>; // Json snapshot of address
   unitPrice?: number;
+  size?: string;
   placements!: CustomizationPlacementDto[];
 }
 
@@ -52,17 +59,14 @@ export class CartService {
             select: {
               id: true,
               email: true,
-              first_name: true,
-              last_name: true,
+              firstName: true,
+              lastName: true,
             },
           },
-          address: true,
           items: {
             include: {
               product: true,
-              customShirtOrder: {
-                include: { placements: true },
-              },
+              placements: true,
             },
           },
         },
@@ -82,7 +86,7 @@ export class CartService {
   }
 
   // 2. Get single order details by ID for admin
-  async getAdminOrderById(id: string) {
+  async getAdminOrderById(id: number) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
@@ -90,17 +94,14 @@ export class CartService {
           select: {
             id: true,
             email: true,
-            first_name: true,
-            last_name: true,
+            firstName: true,
+            lastName: true,
           },
         },
-        address: true,
         items: {
           include: {
             product: true,
-            customShirtOrder: {
-              include: { placements: true },
-            },
+            placements: true,
           },
         },
       },
@@ -114,7 +115,7 @@ export class CartService {
   }
 
   // 3. Update main Order status
-  async updateOrderStatus(id: string, status: OrderStatus) {
+  async updateOrderStatus(id: number, status: OrderStatus) {
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
@@ -128,7 +129,14 @@ export class CartService {
 
   // 4. Process custom shirt order and link it to the main Order system
   async processAndSaveOrder(payload: CustomizationPayload) {
-    const { fabricColor, placements, userId, addressId, unitPrice = 0 } = payload;
+    const {
+      placements,
+      userId,
+      productId,
+      address,
+      unitPrice = 0,
+      size = 'M',
+    } = payload;
 
     if (!placements || placements.length === 0) {
       throw new BadRequestException('At least one design placement is required.');
@@ -136,15 +144,19 @@ export class CartService {
 
     this.logger.log(`Processing order with ${placements.length} placement(s)...`);
 
-    // Upload placement images to Supabase
+    // Upload placement images to storage
     const placementData = await Promise.all(
       placements.map(async (placement, index) => {
         if (!placement.image) {
-          throw new BadRequestException(`Missing base64 image string in placement index ${index}`);
+          throw new BadRequestException(
+            `Missing base64 image string in placement index ${index}`,
+          );
         }
 
         const fileName = `custom-${placement.zone}-${Date.now()}-${index}.png`;
-        this.logger.log(`Uploading ${placement.zone} image to Supabase: ${fileName}`);
+        this.logger.log(
+          `Uploading ${placement.zone} image to Storage: ${fileName}`,
+        );
 
         const imageUrl = await this.storageService.uploadBase64Image(
           placement.image,
@@ -153,43 +165,45 @@ export class CartService {
         );
 
         const coords = placement.coordinates || {};
-        const bounds = placement.printZoneBounds || {};
+
+        // Safely map string zone to PlacementZone enum
+        const zoneKey = placement.zone.toLowerCase() as PlacementZone;
+        const validZone = Object.values(PlacementZone).includes(zoneKey)
+          ? zoneKey
+          : PlacementZone.front;
 
         return {
-          zone: placement.zone || 'front',
-          imageUrl,
-          x: Number(coords.x || 0),
-          y: Number(coords.y || 0),
-          scale: Number(coords.scale || 1),
-          width: Number(coords.width || 0),
-          height: Number(coords.height || 0),
-          centerX: Number(bounds.centerX || 0),
-          centerY: Number(bounds.centerY || 0),
-          clipWidth: Number(bounds.clipWidth || 0),
-          clipHeight: Number(bounds.clipHeight || 0),
+          place: validZone,
+          imgurl: imageUrl,
+          xvalue: Number(coords.x || 0),
+          yvalue: Number(coords.y || 0),
+          zoom: Number(coords.scale || 1.0),
+          width: coords.width ? Number(coords.width) : null,
+          height: coords.height ? Number(coords.height) : null,
         };
       }),
     );
 
-    // Create the unified Order -> OrderItem -> CustomShirtOrder -> DesignPlacements
+    // Generate public unique orderCode
+    const orderCode = `ORD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    // Create Order -> OrderItem -> CustomPlacement records
     const newOrder = await this.prisma.order.create({
       data: {
-        userId: userId || null,
-        addressId: addressId || null,
-        status: OrderStatus.RECEIVED,
+        orderCode,
+        uid: userId,
+        address: address ?? {},
+        status: OrderStatus.PENDING,
         totalAmount: unitPrice,
         items: {
           create: [
             {
+              pid: productId,
               quantity: 1,
+              size: size,
               unitPrice: unitPrice,
-              customShirtOrder: {
-                create: {
-                  fabricColor: fabricColor || 'white',
-                  placements: {
-                    create: placementData,
-                  },
-                },
+              placements: {
+                create: placementData,
               },
             },
           ],
@@ -198,9 +212,7 @@ export class CartService {
       include: {
         items: {
           include: {
-            customShirtOrder: {
-              include: { placements: true },
-            },
+            placements: true,
           },
         },
       },

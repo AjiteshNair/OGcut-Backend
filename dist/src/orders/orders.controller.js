@@ -33,12 +33,8 @@ let OrdersController = class OrdersController {
     async updateOrderStatus(id, dto) {
         return this.ordersService.updateOrderStatus(id, dto);
     }
-    updateStatus(id, status) {
-        return this.ordersService.updateStatus(id, status);
-    }
     async createOrder(req, dto) {
-        console.log("hi");
-        console.log('Creating order for user:', req.user.userId.customShirtOrder);
+        console.log('Creating order for user ID:', req.user.userId);
         return this.ordersService.createOrder(req.user.userId, dto);
     }
     async getUserOrders(req) {
@@ -73,14 +69,6 @@ __decorate([
     __metadata("design:paramtypes", [String, update_order_status_dto_1.UpdateOrderStatusDto]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "updateOrderStatus", null);
-__decorate([
-    (0, common_1.Patch)(':id/status'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)('status')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", void 0)
-], OrdersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Req)()),

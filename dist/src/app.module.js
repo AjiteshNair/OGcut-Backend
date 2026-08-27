@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const products_module_1 = require("./products/products.module");
@@ -15,7 +16,6 @@ const categories_module_1 = require("./categories/categories.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
-const analytics_module_1 = require("./analytics/analytics.module");
 const address_module_1 = require("./address/address.module");
 const cart_module_1 = require("./cart/cart.module");
 const orders_module_1 = require("./orders/orders.module");
@@ -25,15 +25,17 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
             prisma_module_1.PrismaModule,
             products_module_1.ProductsModule,
             categories_module_1.CategoriesModule,
             auth_module_1.AuthModule,
             cart_module_1.CartModule,
             users_module_1.UsersModule,
-            analytics_module_1.AnalyticsModule,
             address_module_1.AddressModule,
-            orders_module_1.OrdersModule
+            orders_module_1.OrdersModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

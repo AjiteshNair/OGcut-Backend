@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartController = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const cart_service_1 = require("./cart.service");
 let CartController = CartController_1 = class CartController {
     cartService;
@@ -23,13 +24,24 @@ let CartController = CartController_1 = class CartController {
     constructor(cartService) {
         this.cartService = cartService;
     }
-    async addToCart(payload) {
+    async addToCart(req, payload) {
         this.logger.log('--- Received POST /cart/add ---');
         this.logger.log(`Keys in payload: ${Object.keys(payload || {}).join(', ')}`);
-        const order = await this.cartService.processAndSaveOrder(payload);
+        const userId = payload.userId ??
+            req.user?.userId ??
+            req.user?.id ??
+            req.user?.sub;
+        if (!userId) {
+            throw new common_1.BadRequestException('User ID is required to process order.');
+        }
+        const order = await this.cartService.processAndSaveOrder({
+            ...payload,
+            userId: Number(userId),
+        });
         return {
             success: true,
             orderId: order.id,
+            orderCode: order.orderCode,
             order,
         };
     }
@@ -49,9 +61,11 @@ let CartController = CartController_1 = class CartController {
 exports.CartController = CartController;
 __decorate([
     (0, common_1.Post)('cart/add'),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [cart_service_1.CustomizationPayload]),
+    __metadata("design:paramtypes", [Object, cart_service_1.CustomizationPayload]),
     __metadata("design:returntype", Promise)
 ], CartController.prototype, "addToCart", null);
 __decorate([
@@ -64,17 +78,17 @@ __decorate([
 ], CartController.prototype, "getAdminOrders", null);
 __decorate([
     (0, common_1.Get)('admin/orders/:id'),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], CartController.prototype, "getAdminOrderById", null);
 __decorate([
     (0, common_1.Patch)('admin/orders/:id/status'),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)('status')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Number, String]),
     __metadata("design:returntype", Promise)
 ], CartController.prototype, "updateOrderStatus", null);
 exports.CartController = CartController = CartController_1 = __decorate([

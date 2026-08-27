@@ -1,18 +1,16 @@
 import { PrismaService } from '../prisma/prisma.service';
-export type ProductResponse = {
-    id: string;
+export interface ProductResponse {
+    id: number;
     name: string;
-    base_price: number;
-    category: string;
-    tagline: string;
-    design_type: string;
-    graphic_url: string | null;
-    mockup_url: string | null;
-    target_zone: string;
-};
+    desc: string;
+    price: number;
+    type: string;
+    isActive: boolean;
+    image: string | null;
+}
 export declare class ProductsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    findAll(category?: string): Promise<ProductResponse[]>;
+    findAll(category?: string): Promise<ProductResponse[] | null>;
     findOne(id: number): Promise<ProductResponse | null>;
 }

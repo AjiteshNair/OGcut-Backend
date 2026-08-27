@@ -65,68 +65,48 @@ let AuthService = class AuthService {
         const user = await this.prisma.user.create({
             data: {
                 email: dto.email,
-                password_hash: hashedPassword,
-                first_name: dto.first_name,
-                last_name: dto.last_name,
+                passwordHash: hashedPassword,
+                firstName: dto.first_name,
+                lastName: dto.last_name ?? null,
             },
         });
-        const payload = { sub: user.id, email: user.email, role: user.role };
-        return {
-            access_token: await this.jwtService.signAsync(payload),
-            user: {
-                id: user.id,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                role: user.role,
-            },
-        };
+        return this.generateAuthResult(user);
     }
     async validateOAuthUser(details) {
-        let user = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.upsert({
             where: { email: details.email },
-        });
-        if (!user) {
-            user = await this.prisma.user.create({
-                data: {
-                    email: details.email,
-                    first_name: details.first_name || 'User',
-                    last_name: details.last_name || '',
-                    password_hash: '',
-                },
-            });
-        }
-        const payload = { sub: user.id, email: user.email, role: user.role };
-        return {
-            access_token: await this.jwtService.signAsync(payload),
-            user: {
-                id: user.id,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                role: user.role,
+            update: {},
+            create: {
+                email: details.email,
+                firstName: details.first_name || 'User',
+                lastName: details.last_name ?? null,
+                passwordHash: '',
             },
-        };
+        });
+        return this.generateAuthResult(user);
     }
     async login(dto) {
         const user = await this.prisma.user.findUnique({
             where: { email: dto.email },
         });
-        if (!user || !user.password_hash) {
+        if (!user || !user.passwordHash) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
-        const isPasswordValid = await bcrypt.compare(dto.password, user.password_hash);
+        const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
+        return this.generateAuthResult(user);
+    }
+    async generateAuthResult(user) {
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             access_token: await this.jwtService.signAsync(payload),
             user: {
                 id: user.id,
                 email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
+                first_name: user.firstName,
+                last_name: user.lastName,
                 role: user.role,
             },
         };

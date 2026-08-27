@@ -1,35 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async toggleSaveDesign(userId: string, productId: number) {
-    const existing = await this.prisma.savedDesign.findFirst({
-      where: {
-        user_id: userId,
-        product_id: productId,
+  async getUserProfile(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        createdAt: true,
       },
     });
 
-    if (existing) {
-      await this.prisma.savedDesign.delete({
-        where: { id: existing.id },
-      });
-      return { saved: false };
-    } else {
-      await this.prisma.savedDesign.create({
-        data: { user_id: userId, product_id: productId },
-      });
-      return { saved: true };
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-  }
 
-  async getSavedDesigns(userId: string) {
-    return this.prisma.savedDesign.findMany({
-      where: { user_id: userId },
-      include: { product: true },
-    });
+    return user;
   }
 }
