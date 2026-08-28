@@ -121,8 +121,32 @@ let OrdersService = class OrdersService {
     async getUserOrders(userId) {
         console.log('inside getUserOrders');
     }
-    async getOrderById(userId, orderId) {
-        console.log('inside getOrderById');
+    async getOrderById(userId, identifier) {
+        const parsedId = parseInt(identifier, 10);
+        const isNumeric = !isNaN(parsedId);
+        const order = await this.prisma.order.findFirst({
+            where: {
+                uid: userId,
+                OR: [
+                    ...(isNumeric ? [{ id: parsedId }] : []),
+                    { orderCode: identifier },
+                ],
+            },
+            include: {
+                items: {
+                    include: {
+                        product: {
+                            include: { images: { take: 1 } },
+                        },
+                        placements: true,
+                    },
+                },
+            },
+        });
+        if (!order) {
+            throw new common_1.NotFoundException('Order not found or access denied');
+        }
+        return { message: 'Order fetched successfully', order };
     }
 };
 exports.OrdersService = OrdersService;

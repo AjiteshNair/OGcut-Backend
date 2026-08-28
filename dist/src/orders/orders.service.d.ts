@@ -46,5 +46,56 @@ export declare class OrdersService {
     findAdminOrderById(orderId: string): Promise<void>;
     updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto): Promise<void>;
     getUserOrders(userId: string): Promise<void>;
-    getOrderById(userId: string, orderId: string): Promise<void>;
+    getOrderById(userId: number, identifier: string): Promise<{
+        message: string;
+        order: {
+            items: ({
+                product: {
+                    images: {
+                        id: number;
+                        pid: number;
+                        imgurl: string;
+                        sortWeight: number;
+                    }[];
+                } & {
+                    name: string;
+                    id: number;
+                    isActive: boolean;
+                    desc: string;
+                    price: Prisma.Decimal;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+            } & {
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+                unitPrice: Prisma.Decimal;
+            })[];
+        } & {
+            id: number;
+            createdAt: Date;
+            address: Prisma.JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            totalAmount: Prisma.Decimal;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        };
+    }>;
 }

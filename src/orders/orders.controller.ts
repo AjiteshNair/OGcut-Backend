@@ -50,7 +50,6 @@ export class OrdersController {
 
   @Post()
   async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
-    console.log('Creating order for user ID:', req.user.userId);
     return this.ordersService.createOrder(req.user.userId, dto);
   }
   

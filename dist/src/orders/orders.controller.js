@@ -34,7 +34,6 @@ let OrdersController = class OrdersController {
         return this.ordersService.updateOrderStatus(id, dto);
     }
     async createOrder(req, dto) {
-        console.log('Creating order for user ID:', req.user.userId);
         return this.ordersService.createOrder(req.user.userId, dto);
     }
     async getUserOrders(req) {
