@@ -23,6 +23,19 @@ let ProductsController = class ProductsController {
     async getProducts(category) {
         return this.productsService.findAll(category);
     }
+    async getProductPrices(ids) {
+        if (!ids) {
+            throw new common_1.BadRequestException('Query parameter "ids" is required');
+        }
+        const parsedIds = ids
+            .split(',')
+            .map((id) => parseInt(id.trim(), 10))
+            .filter((id) => !isNaN(id));
+        if (parsedIds.length === 0) {
+            throw new common_1.BadRequestException('Invalid product IDs provided');
+        }
+        return this.productsService.findPricesByIds(parsedIds);
+    }
     async getProductById(id) {
         const product = await this.productsService.findOne(id);
         if (!product) {
@@ -39,6 +52,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getProducts", null);
+__decorate([
+    (0, common_1.Get)('prices'),
+    __param(0, (0, common_1.Query)('ids')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "getProductPrices", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),

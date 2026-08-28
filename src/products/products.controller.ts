@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 
@@ -18,7 +19,26 @@ export class ProductsController {
     return this.productsService.findAll(category);
   }
 
+  @Get('prices')
+  async getProductPrices(@Query('ids') ids?: string) {
+    if (!ids) {
+      throw new BadRequestException('Query parameter "ids" is required');
+    }
+
+    const parsedIds = ids
+      .split(',')
+      .map((id) => parseInt(id.trim(), 10))
+      .filter((id) => !isNaN(id));
+
+    if (parsedIds.length === 0) {
+      throw new BadRequestException('Invalid product IDs provided');
+    }
+
+    return this.productsService.findPricesByIds(parsedIds);
+  }
+
   @Get(':id')
+
   async getProductById(@Param('id', ParseIntPipe) id: number) {
     const product = await this.productsService.findOne(id);
     if (!product) {

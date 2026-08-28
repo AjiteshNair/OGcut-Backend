@@ -12,12 +12,12 @@ export declare class CreateOrderItemDto {
     productId: number;
     quantity: number;
     size: string;
+    color?: string;
     unitPrice: number;
     placements?: PlacementDto[];
 }
 export declare class CreateOrderDto {
-    addressId?: number;
-    address?: Record<string, any>;
+    addressId: number;
     coupon?: string;
     items: CreateOrderItemDto[];
 }

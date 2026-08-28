@@ -1,10 +1,10 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
@@ -44,10 +44,12 @@ export class PlacementDto {
 
 export class CreateOrderItemDto {
   @IsNumber()
+  @IsNotEmpty()
   @Type(() => Number)
   productId!: number;
 
   @IsNumber()
+  @IsNotEmpty()
   @Type(() => Number)
   quantity!: number;
 
@@ -55,7 +57,12 @@ export class CreateOrderItemDto {
   @IsNotEmpty()
   size!: string;
 
+  @IsOptional()
+  @IsString()
+  color?: string;
+
   @IsNumber()
+  @IsNotEmpty()
   @Type(() => Number)
   unitPrice!: number;
 
@@ -67,20 +74,17 @@ export class CreateOrderItemDto {
 }
 
 export class CreateOrderDto {
-  @IsOptional()
   @IsNumber()
+  @IsNotEmpty()
   @Type(() => Number)
-  addressId?: number;
-
-  @IsOptional()
-  @IsObject()
-  address?: Record<string, any>;
+  addressId!: number;
 
   @IsOptional()
   @IsString()
   coupon?: string;
 
   @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
   items!: CreateOrderItemDto[];

@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersService = void 0;
 const common_1 = require("@nestjs/common");
+const crypto_1 = require("crypto");
 const prisma_service_1 = require("../prisma/prisma.service");
 let OrdersService = class OrdersService {
     prisma;
@@ -18,7 +19,95 @@ let OrdersService = class OrdersService {
         this.prisma = prisma;
     }
     async createOrder(userId, dto) {
-        console.log('inside createorder');
+        const address = await this.prisma.address.findFirst({
+            where: {
+                id: dto.addressId,
+                uid: userId,
+            },
+        });
+        if (!address) {
+            throw new common_1.NotFoundException('Address not found or does not belong to user');
+        }
+        const productIds = dto.items.map((item) => item.productId);
+        const products = await this.prisma.product.findMany({
+            where: {
+                id: { in: productIds },
+                isActive: true,
+            },
+        });
+        const productMap = new Map(products.map((p) => [p.id, p]));
+        for (const item of dto.items) {
+            if (!productMap.has(item.productId)) {
+                throw new common_1.BadRequestException(`Product with ID ${item.productId} is invalid or inactive`);
+            }
+        }
+        let calculatedTotal = 0;
+        const itemsToCreate = dto.items.map((item) => {
+            const product = productMap.get(item.productId);
+            const unitPrice = product.price;
+            const lineTotal = Number(unitPrice) * item.quantity;
+            calculatedTotal += lineTotal;
+            return {
+                pid: item.productId,
+                quantity: item.quantity,
+                size: item.size,
+                color: item.color || null,
+                unitPrice: unitPrice,
+                ...(item.placements && item.placements.length > 0
+                    ? {
+                        placements: {
+                            create: item.placements.map((p) => ({
+                                place: p.place,
+                                imgurl: p.imgurl,
+                                xvalue: p.xvalue,
+                                yvalue: p.yvalue,
+                                zoom: p.zoom ?? 1.0,
+                                height: p.height ?? null,
+                                width: p.width ?? null,
+                            })),
+                        },
+                    }
+                    : {}),
+            };
+        });
+        const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const randomHex = (0, crypto_1.randomBytes)(3).toString('hex').toUpperCase();
+        const orderCode = `ORD-${todayStr}-${randomHex}`;
+        const newOrder = await this.prisma.order.create({
+            data: {
+                orderCode,
+                uid: userId,
+                address: {
+                    id: address.id,
+                    label: address.label,
+                    fullName: address.fullName,
+                    line1: address.line1,
+                    line2: address.line2,
+                    city: address.city,
+                    state: address.state,
+                    pincode: address.pincode,
+                    phone: address.phone,
+                },
+                coupon: dto.coupon || null,
+                status: 'PENDING',
+                paymentStatus: 'UNPAID',
+                totalAmount: calculatedTotal,
+                items: {
+                    create: itemsToCreate,
+                },
+            },
+            include: {
+                items: {
+                    include: {
+                        placements: true,
+                    },
+                },
+            },
+        });
+        return {
+            message: 'Order created successfully',
+            order: newOrder,
+        };
     }
     async findAllForAdmin() {
         console.log('inside findAllForAdmin');

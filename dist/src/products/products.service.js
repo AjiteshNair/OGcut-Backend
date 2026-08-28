@@ -47,6 +47,24 @@ let ProductsService = class ProductsService {
             image: product.images.length > 0 ? product.images[0].imgurl : null,
         }));
     }
+    async findPricesByIds(ids) {
+        if (ids.length === 0)
+            return {};
+        const products = await this.prisma.product.findMany({
+            where: {
+                id: { in: ids },
+                isActive: true,
+            },
+            select: {
+                id: true,
+                price: true,
+            },
+        });
+        return products.reduce((acc, product) => {
+            acc[product.id] = Number(product.price);
+            return acc;
+        }, {});
+    }
     async findOne(id) {
         console.log('inside findOne');
         return null;

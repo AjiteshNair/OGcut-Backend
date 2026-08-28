@@ -66,6 +66,7 @@ export declare class CartService {
                 oid: number;
                 quantity: number;
                 size: string;
+                color: string | null;
                 unitPrice: import("@prisma/client-runtime-utils").Decimal;
             })[];
         } & {
@@ -120,6 +121,7 @@ export declare class CartService {
             oid: number;
             quantity: number;
             size: string;
+            color: string | null;
             unitPrice: import("@prisma/client-runtime-utils").Decimal;
         })[];
     } & {
@@ -165,6 +167,7 @@ export declare class CartService {
             oid: number;
             quantity: number;
             size: string;
+            color: string | null;
             unitPrice: import("@prisma/client-runtime-utils").Decimal;
         })[];
     } & {

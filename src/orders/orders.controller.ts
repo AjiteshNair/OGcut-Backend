@@ -48,11 +48,19 @@ export class OrdersController {
   // CUSTOMER / USER ROUTES
   // ==========================================
 
-@Post()
+  @Post()
   async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
     console.log('Creating order for user ID:', req.user.userId);
     return this.ordersService.createOrder(req.user.userId, dto);
   }
+  
+// @Post()
+// async createOrder(
+//   @User('id') userId: number, 
+//   @Body() dto: CreateOrderDto,
+// ) {
+//   return this.ordersService.createOrder(userId, dto);
+// }
 
   @Get()
   async getUserOrders(@Req() req: any) {

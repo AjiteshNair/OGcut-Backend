@@ -63,17 +63,20 @@ class CreateOrderItemDto {
     productId;
     quantity;
     size;
+    color;
     unitPrice;
     placements;
 }
 exports.CreateOrderItemDto = CreateOrderItemDto;
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "productId", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "quantity", void 0);
@@ -83,7 +86,13 @@ __decorate([
     __metadata("design:type", String)
 ], CreateOrderItemDto.prototype, "size", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateOrderItemDto.prototype, "color", void 0);
+__decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderItemDto.prototype, "unitPrice", void 0);
@@ -96,22 +105,16 @@ __decorate([
 ], CreateOrderItemDto.prototype, "placements", void 0);
 class CreateOrderDto {
     addressId;
-    address;
     coupon;
     items;
 }
 exports.CreateOrderDto = CreateOrderDto;
 __decorate([
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateOrderDto.prototype, "addressId", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsObject)(),
-    __metadata("design:type", Object)
-], CreateOrderDto.prototype, "address", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -119,6 +122,7 @@ __decorate([
 ], CreateOrderDto.prototype, "coupon", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayMinSize)(1),
     (0, class_validator_1.ValidateNested)({ each: true }),
     (0, class_transformer_1.Type)(() => CreateOrderItemDto),
     __metadata("design:type", Array)

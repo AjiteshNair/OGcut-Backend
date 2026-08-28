@@ -12,5 +12,6 @@ export declare class ProductsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     findAll(category?: string): Promise<ProductResponse[] | null>;
+    findPricesByIds(ids: number[]): Promise<Record<number, number>>;
     findOne(id: number): Promise<ProductResponse | null>;
 }

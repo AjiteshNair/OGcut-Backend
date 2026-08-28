@@ -7,7 +7,43 @@ export declare class OrdersController {
     getAllOrdersForAdmin(): Promise<void>;
     getAdminOrderById(id: string): Promise<void>;
     updateOrderStatus(id: string, dto: UpdateOrderStatusDto): Promise<void>;
-    createOrder(req: any, dto: CreateOrderDto): Promise<void>;
+    createOrder(req: any, dto: CreateOrderDto): Promise<{
+        message: string;
+        order: {
+            items: ({
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+            } & {
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+                unitPrice: import("@prisma/client-runtime-utils").Decimal;
+            })[];
+        } & {
+            id: number;
+            createdAt: Date;
+            address: import("@prisma/client/runtime/client").JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            totalAmount: import("@prisma/client-runtime-utils").Decimal;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        };
+    }>;
     getUserOrders(req: any): Promise<void>;
     getOrderById(req: any, id: string): Promise<void>;
 }

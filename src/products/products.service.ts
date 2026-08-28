@@ -48,6 +48,27 @@ export class ProductsService {
     }));
   }
 
+  async findPricesByIds(ids: number[]): Promise<Record<number, number>> {
+    if (ids.length === 0) return {};
+
+    const products = await this.prisma.product.findMany({
+      where: {
+        id: { in: ids },
+        isActive: true,
+      },
+      select: {
+        id: true,
+        price: true,
+      },
+    });
+
+    return products.reduce((acc, product) => {
+      // Prisma Decimal type converted to JS number
+      acc[product.id] = Number(product.price);
+      return acc;
+    }, {} as Record<number, number>);
+  }
+
   async findOne(id: number): Promise<ProductResponse | null> {
     console.log('inside findOne')
     return null;

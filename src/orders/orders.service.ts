@@ -3,6 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -11,8 +13,115 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createOrder(userId: string, dto: CreateOrderDto) {
-   console.log('inside createorder')
+  async createOrder(userId: number, dto: CreateOrderDto) {
+    // 1. Fetch user address to store as a permanent JSON snapshot on the Order
+    const address = await this.prisma.address.findFirst({
+      where: {
+        id: dto.addressId,
+        uid: userId,
+      },
+    });
+
+    if (!address) {
+      throw new NotFoundException('Address not found or does not belong to user');
+    }
+
+    // 2. Fetch products to verify existence and use actual backend prices
+    const productIds = dto.items.map((item) => item.productId);
+    const products = await this.prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        isActive: true,
+      },
+    });
+
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    // Validate that all submitted products exist in DB
+    for (const item of dto.items) {
+      if (!productMap.has(item.productId)) {
+        throw new BadRequestException(
+          `Product with ID ${item.productId} is invalid or inactive`,
+        );
+      }
+    }
+
+    // 3. Compute reliable canonical prices server-side
+    let calculatedTotal = 0;
+    const itemsToCreate = dto.items.map((item) => {
+      const product = productMap.get(item.productId)!;
+      // Prefer server price over client price to prevent price tampering
+      const unitPrice = product.price;
+      const lineTotal = Number(unitPrice) * item.quantity;
+      calculatedTotal += lineTotal;
+
+      return {
+        pid: item.productId,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color || null,
+        unitPrice: unitPrice,
+        // Build nested placement records if present
+        ...(item.placements && item.placements.length > 0
+          ? {
+              placements: {
+                create: item.placements.map((p) => ({
+                  place: p.place,
+                  imgurl: p.imgurl,
+                  xvalue: p.xvalue,
+                  yvalue: p.yvalue,
+                  zoom: p.zoom ?? 1.0,
+                  height: p.height ?? null,
+                  width: p.width ?? null,
+                })),
+              },
+            }
+          : {}),
+      };
+    });
+
+    // 4. Generate date-stamped public orderCode (e.g., ORD-20260828-A1B2C3)
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const randomHex = randomBytes(3).toString('hex').toUpperCase();
+    const orderCode = `ORD-${todayStr}-${randomHex}`;
+
+    // 5. Create Order, OrderItems, and CustomPlacements within a transaction
+    const newOrder = await this.prisma.order.create({
+      data: {
+        orderCode,
+        uid: userId,
+        address: {
+          id: address.id,
+          label: address.label,
+          fullName: address.fullName,
+          line1: address.line1,
+          line2: address.line2,
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode,
+          phone: address.phone,
+        } as Prisma.JsonObject,
+        coupon: dto.coupon || null,
+        status: 'PENDING',
+        paymentStatus: 'UNPAID',
+        totalAmount: calculatedTotal,
+        items: {
+          create: itemsToCreate,
+        },
+      },
+      include: {
+        items: {
+          include: {
+            placements: true,
+          },
+        },
+      },
+    });
+
+    return {
+      message: 'Order created successfully',
+      order: newOrder,
+    };
   }
 
   // ==========================================
@@ -20,15 +129,15 @@ export class OrdersService {
   // ==========================================
 
   async findAllForAdmin() {
-   console.log('inside findAllForAdmin')
+    console.log('inside findAllForAdmin');
   }
 
   async findAdminOrderById(orderId: string) {
-    console.log('inside findAdminOrderById')
+    console.log('inside findAdminOrderById');
   }
 
   async updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto) {
-    console.log('inside updateOrderStatus')
+    console.log('inside updateOrderStatus');
   }
 
   // ==========================================
@@ -36,10 +145,10 @@ export class OrdersService {
   // ==========================================
 
   async getUserOrders(userId: string) {
-    console.log('inside getUserOrders')
+    console.log('inside getUserOrders');
   }
 
   async getOrderById(userId: string, orderId: string) {
-    console.log('inside getOrderById')
+    console.log('inside getOrderById');
   }
 }

@@ -112,6 +112,7 @@ model OrderItem {
   pid       Int
   quantity  Int     @default(1)
   size      String
+  color     String? @db.VarChar(50)
   unitPrice Decimal @db.Decimal(10, 2)
 
   order      Order             @relation(fields: [oid], references: [id], onDelete: Restrict)
