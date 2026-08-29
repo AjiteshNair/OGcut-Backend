@@ -4,9 +4,108 @@ import { OrdersService } from './orders.service';
 export declare class OrdersController {
     private readonly ordersService;
     constructor(ordersService: OrdersService);
-    getAllOrdersForAdmin(): Promise<void>;
-    getAdminOrderById(id: string): Promise<void>;
-    updateOrderStatus(id: string, dto: UpdateOrderStatusDto): Promise<void>;
+    getAllOrdersForAdmin(): Promise<{
+        success: boolean;
+        data: {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+                product: {
+                    name: string;
+                    id: number;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+            }[];
+            user: {
+                id: number;
+                email: string;
+                firstName: string;
+                lastName: string | null;
+                phone: string | null;
+            };
+            id: number;
+            createdAt: Date;
+            address: import("@prisma/client/runtime/client").JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        }[];
+    }>;
+    getAdminOrderById(id: string): Promise<{
+        success: boolean;
+        data: {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+                product: {
+                    name: string;
+                    id: number;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+            }[];
+            user: {
+                id: number;
+                email: string;
+                firstName: string;
+                lastName: string | null;
+                phone: string | null;
+            };
+            id: number;
+            createdAt: Date;
+            address: import("@prisma/client/runtime/client").JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        };
+    }>;
+    updateOrderStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
+        success: boolean;
+        data: {
+            id: number;
+            orderCode: string;
+            status: import("@prisma/client").$Enums.OrderStatus;
+        };
+    }>;
     createOrder(req: any, dto: CreateOrderDto): Promise<{
         message: string;
         order: {

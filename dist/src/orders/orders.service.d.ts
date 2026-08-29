@@ -42,9 +42,108 @@ export declare class OrdersService {
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
         };
     }>;
-    findAllForAdmin(): Promise<void>;
-    findAdminOrderById(orderId: string): Promise<void>;
-    updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto): Promise<void>;
+    findAllForAdmin(): Promise<{
+        success: boolean;
+        data: {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+                product: {
+                    name: string;
+                    id: number;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+            }[];
+            user: {
+                id: number;
+                email: string;
+                firstName: string;
+                lastName: string | null;
+                phone: string | null;
+            };
+            id: number;
+            createdAt: Date;
+            address: Prisma.JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        }[];
+    }>;
+    findAdminOrderById(orderId: string): Promise<{
+        success: boolean;
+        data: {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+                product: {
+                    name: string;
+                    id: number;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+            }[];
+            user: {
+                id: number;
+                email: string;
+                firstName: string;
+                lastName: string | null;
+                phone: string | null;
+            };
+            id: number;
+            createdAt: Date;
+            address: Prisma.JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        };
+    }>;
+    updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto): Promise<{
+        success: boolean;
+        data: {
+            id: number;
+            orderCode: string;
+            status: import("@prisma/client").$Enums.OrderStatus;
+        };
+    }>;
     getUserOrders(userId: string): Promise<void>;
     getOrderById(userId: number, identifier: string): Promise<{
         message: string;

@@ -1,5 +1,4 @@
-import { OrderStatus, PaymentStatus } from '@prisma/client';
+import { OrderStatus } from '@prisma/client';
 export declare class UpdateOrderStatusDto {
     status: OrderStatus;
-    paymentStatus?: PaymentStatus;
 }

@@ -14,6 +14,7 @@ export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createOrder(userId: number, dto: CreateOrderDto) {
+    console.log(">>>>>>>>>>>>>>>>>>",dto)
     // 1. Fetch user address to store as a permanent JSON snapshot on the Order
     const address = await this.prisma.address.findFirst({
       where: {
@@ -129,15 +130,124 @@ export class OrdersService {
   // ==========================================
 
   async findAllForAdmin() {
-    console.log('inside findAllForAdmin');
+    const orders = await this.prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+            placements: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: orders.map((order) => ({
+        ...order,
+        totalAmount: Number(order.totalAmount),
+        items: order.items.map((item) => ({
+          ...item,
+          unitPrice: Number(item.unitPrice),
+        })),
+      })),
+    };
   }
 
   async findAdminOrderById(orderId: string) {
-    console.log('inside findAdminOrderById');
+    const numericId = parseInt(orderId, 10);
+    if (isNaN(numericId)) {
+      throw new BadRequestException('Invalid order ID provided');
+    }
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: numericId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+            placements: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    return {
+      success: true,
+      data: {
+        ...order,
+        totalAmount: Number(order.totalAmount),
+        items: order.items.map((item) => ({
+          ...item,
+          unitPrice: Number(item.unitPrice),
+        })),
+      },
+    };
   }
 
   async updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto) {
-    console.log('inside updateOrderStatus');
+    const numericId = parseInt(orderId, 10);
+    if (isNaN(numericId)) {
+      throw new BadRequestException('Invalid order ID provided');
+    }
+
+    const existingOrder = await this.prisma.order.findUnique({
+      where: { id: numericId },
+    });
+
+    if (!existingOrder) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: numericId },
+      data: { status: dto.status },
+      select: {
+        id: true,
+        orderCode: true,
+        status: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: updatedOrder,
+    };
   }
 
   // ==========================================

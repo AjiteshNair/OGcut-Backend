@@ -14,20 +14,11 @@ const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
 class UpdateOrderStatusDto {
     status;
-    paymentStatus;
 }
 exports.UpdateOrderStatusDto = UpdateOrderStatusDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(client_1.OrderStatus, {
-        message: `status must be one of: ${Object.values(client_1.OrderStatus).join(', ')}`,
-    }),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsEnum)(client_1.OrderStatus),
     __metadata("design:type", String)
 ], UpdateOrderStatusDto.prototype, "status", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(client_1.PaymentStatus, {
-        message: `paymentStatus must be one of: ${Object.values(client_1.PaymentStatus).join(', ')}`,
-    }),
-    __metadata("design:type", String)
-], UpdateOrderStatusDto.prototype, "paymentStatus", void 0);
 //# sourceMappingURL=update-order-status.dto.js.map
