@@ -21,13 +21,13 @@ let ProductsService = class ProductsService {
         const products = await this.prisma.product.findMany({
             where: {
                 isActive: true,
+                type: 'STANDARD'
             },
             include: {
                 images: {
-                    where: {
-                        sortWeight: 0,
+                    orderBy: {
+                        sortWeight: 'asc',
                     },
-                    take: 1,
                 },
             },
             orderBy: {
@@ -44,7 +44,7 @@ let ProductsService = class ProductsService {
             price: Number(product.price),
             type: product.type,
             isActive: product.isActive,
-            image: product.images.length > 0 ? product.images[0].imgurl : null,
+            images: product.images.map((img) => img.imgurl),
         }));
     }
     async findPricesByIds(ids) {
@@ -66,8 +66,29 @@ let ProductsService = class ProductsService {
         }, {});
     }
     async findOne(id) {
-        console.log('inside findOne');
-        return null;
+        const product = await this.prisma.product.findUnique({
+            where: { id },
+            include: {
+                images: {
+                    orderBy: {
+                        sortWeight: 'asc',
+                    },
+                },
+            },
+        });
+        if (!product) {
+            throw new common_1.NotFoundException(`Product with ID ${id} not found`);
+        }
+        const imageUrls = product.images.map((img) => img.imgurl);
+        return {
+            id: product.id,
+            name: product.name,
+            desc: product.desc,
+            price: Number(product.price),
+            type: product.type,
+            isActive: product.isActive,
+            images: imageUrls,
+        };
     }
 };
 exports.ProductsService = ProductsService;

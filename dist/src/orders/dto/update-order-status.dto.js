@@ -14,11 +14,17 @@ const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
 class UpdateOrderStatusDto {
     status;
+    trackingNumber;
 }
 exports.UpdateOrderStatusDto = UpdateOrderStatusDto;
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.OrderStatus),
     __metadata("design:type", String)
 ], UpdateOrderStatusDto.prototype, "status", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateOrderStatusDto.prototype, "trackingNumber", void 0);
 //# sourceMappingURL=update-order-status.dto.js.map

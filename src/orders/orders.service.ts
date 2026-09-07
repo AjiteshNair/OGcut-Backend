@@ -226,6 +226,11 @@ export class OrdersService {
       throw new BadRequestException('Invalid order ID provided');
     }
 
+    // Ensure at least one field is being updated
+    if (dto.status === undefined && dto.trackingNumber === undefined) {
+      throw new BadRequestException('At least status or trackingNumber must be provided');
+    }
+
     const existingOrder = await this.prisma.order.findUnique({
       where: { id: numericId },
     });
@@ -236,11 +241,15 @@ export class OrdersService {
 
     const updatedOrder = await this.prisma.order.update({
       where: { id: numericId },
-      data: { status: dto.status },
+      data: {
+        ...(dto.status !== undefined && { status: dto.status }),
+        ...(dto.trackingNumber !== undefined && { trackingNumber: dto.trackingNumber }),
+      },
       select: {
         id: true,
         orderCode: true,
         status: true,
+        trackingNumber: true,
       },
     });
 

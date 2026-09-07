@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface ProductResponse {
@@ -8,7 +8,7 @@ export interface ProductResponse {
   price: number;
   type: string;
   isActive: boolean;
-  image: string | null;
+  images: string[];
 }
 
 @Injectable()
@@ -19,13 +19,13 @@ export class ProductsService {
     const products = await this.prisma.product.findMany({
       where: {
         isActive: true,
+        type: 'STANDARD'
       },
       include: {
         images: {
-          where: {
-            sortWeight: 0,
+          orderBy: {
+            sortWeight: 'asc', // Keeps them in the correct custom order for cycling
           },
-          take: 1,
         },
       },
       orderBy: {
@@ -44,9 +44,10 @@ export class ProductsService {
       price: Number(product.price),
       type: product.type,
       isActive: product.isActive,
-      image: product.images.length > 0 ? product.images[0].imgurl : null,
+      images: product.images.map((img) => img.imgurl), // Maps all fetched images to strings
     }));
   }
+
 
   async findPricesByIds(ids: number[]): Promise<Record<number, number>> {
     if (ids.length === 0) return {};
@@ -69,8 +70,33 @@ export class ProductsService {
     }, {} as Record<number, number>);
   }
 
-  async findOne(id: number): Promise<ProductResponse | null> {
-    console.log('inside findOne')
-    return null;
+  async findOne(id: number): Promise<ProductResponse> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        images: {
+          orderBy: {
+            sortWeight: 'asc', // DB-level sorting ensures correct sequence
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    // Map directly to a sorted array of URL strings
+    const imageUrls = product.images.map((img) => img.imgurl);
+
+    return {
+      id: product.id,
+      name: product.name,
+      desc: product.desc,
+      price: Number(product.price),
+      type: product.type,
+      isActive: product.isActive,
+      images: imageUrls,
+    };
   }
 }

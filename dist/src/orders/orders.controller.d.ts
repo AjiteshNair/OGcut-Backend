@@ -104,6 +104,7 @@ export declare class OrdersController {
             id: number;
             orderCode: string;
             status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
         };
     }>;
     createOrder(req: any, dto: CreateOrderDto): Promise<{

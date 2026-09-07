@@ -142,6 +142,7 @@ export declare class OrdersService {
             id: number;
             orderCode: string;
             status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
         };
     }>;
     getUserOrders(userId: string): Promise<void>;
