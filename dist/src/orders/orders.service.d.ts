@@ -1,10 +1,15 @@
 import { Prisma } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { RazorpayService } from '../razorpay/razorpay.service';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 export declare class OrdersService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly razorpayService;
+    private readonly configService;
+    constructor(prisma: PrismaService, razorpayService: RazorpayService, configService: ConfigService);
     createOrder(userId: number, dto: CreateOrderDto): Promise<{
         message: string;
         order: {
@@ -195,6 +200,25 @@ export declare class OrdersService {
             status: import("@prisma/client").$Enums.OrderStatus;
             totalAmount: Prisma.Decimal;
             trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        };
+    }>;
+    createRazorpayOrder(orderId: number): Promise<{
+        success: boolean;
+        data: {
+            razorpayOrderId: string;
+            amount: string | number;
+            currency: string;
+            keyId: string | undefined;
+        };
+    }>;
+    verifyPayment(dto: VerifyPaymentDto): Promise<{
+        success: boolean;
+        message: string;
+        data: {
+            id: number;
+            orderCode: string;
+            status: import("@prisma/client").$Enums.OrderStatus;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
         };
     }>;

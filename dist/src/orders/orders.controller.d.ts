@@ -1,6 +1,8 @@
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrdersService } from './orders.service';
+import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
 export declare class OrdersController {
     private readonly ordersService;
     constructor(ordersService: OrdersService);
@@ -194,6 +196,25 @@ export declare class OrdersController {
             status: import("@prisma/client").$Enums.OrderStatus;
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        };
+    }>;
+    createRazorpayOrder(dto: CreateRazorpayOrderDto): Promise<{
+        success: boolean;
+        data: {
+            razorpayOrderId: string;
+            amount: string | number;
+            currency: string;
+            keyId: string | undefined;
+        };
+    }>;
+    verifyPayment(dto: VerifyPaymentDto): Promise<{
+        success: boolean;
+        message: string;
+        data: {
+            id: number;
+            orderCode: string;
+            status: import("@prisma/client").$Enums.OrderStatus;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
         };
     }>;

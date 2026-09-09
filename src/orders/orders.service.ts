@@ -4,17 +4,25 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
+import * as crypto from 'crypto'; // Fixed: Imported crypto module for HMAC
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { RazorpayService } from '../razorpay/razorpay.service';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly razorpayService: RazorpayService, // Fixed: Injected RazorpayService
+    private readonly configService: ConfigService,     // Fixed: Injected ConfigService
+  ) {}
 
   async createOrder(userId: number, dto: CreateOrderDto) {
-    console.log(">>>>>>>>>>>>>>>>>>",dto)
+    console.log(">>>>>>>>>>>>>>>>>>", dto);
     // 1. Fetch user address to store as a permanent JSON snapshot on the Order
     const address = await this.prisma.address.findFirst({
       where: {
@@ -296,5 +304,82 @@ export class OrdersService {
     }
 
     return { message: 'Order fetched successfully', order };
+  }
+
+  // ==========================================
+  // RAZORPAY PAYMENT INTEGRATION METHODS
+  // ==========================================
+
+  // 1. Create Razorpay Order
+  async createRazorpayOrder(orderId: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${orderId} not found`);
+    }
+
+    // Convert totalAmount (Decimal) to Paise (1 INR = 100 Paise)
+    const amountInPaise = Math.round(Number(order.totalAmount) * 100);
+
+    const options = {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: order.orderCode,
+    };
+
+    try {
+      // Call Razorpay API
+      const razorpayOrder = await this.razorpayService.instance.orders.create(options);
+
+      return {
+        success: true,
+        data: {
+          razorpayOrderId: razorpayOrder.id,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          keyId: this.configService.get<string>('RAZORPAY_KEY_ID'),
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException('Failed to create Razorpay payment order');
+    }
+  }
+
+  // 2. Verify Payment HMAC Signature
+  async verifyPayment(dto: VerifyPaymentDto) {
+    const secret = this.configService.getOrThrow<string>('RAZORPAY_KEY_SECRET');
+
+    // Signature formula specified by Razorpay: HMAC-SHA256(order_id + "|" + payment_id, secret)
+    const generatedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(`${dto.razorpayOrderId}|${dto.razorpayPaymentId}`)
+      .digest('hex');
+
+    if (generatedSignature !== dto.razorpaySignature) {
+      throw new BadRequestException('Invalid payment signature verification failed');
+    }
+
+    // Signature is valid! Update Order in Database
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: dto.orderId },
+      data: {
+        paymentStatus: 'PAID',
+        status: 'PROCESSING',
+      },
+      select: {
+        id: true,
+        orderCode: true,
+        status: true,
+        paymentStatus: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Payment verified successfully',
+      data: updatedOrder,
+    };
   }
 }
