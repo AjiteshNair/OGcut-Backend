@@ -7,11 +7,6 @@ const app_module_1 = require("./app.module");
 const common_1 = require("@nestjs/common");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.enableCors({
-        origin: true,
-        allowedHeaders: ['Content-Type', 'Authorization'],
-        credentials: true,
-    });
     app.setGlobalPrefix('api');
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
@@ -22,6 +17,7 @@ async function bootstrap() {
     app.use((0, express_1.urlencoded)({ limit: '50mb', extended: true }));
     app.enableCors({
         origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
     });
     const config = new swagger_1.DocumentBuilder()

@@ -1,65 +1,27 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersService = void 0;
 const common_1 = require("@nestjs/common");
-const config_1 = require("@nestjs/config");
 const crypto_1 = require("crypto");
-const crypto = __importStar(require("crypto"));
 const prisma_service_1 = require("../prisma/prisma.service");
-const razorpay_service_1 = require("../razorpay/razorpay.service");
+const razorpay_client_1 = require("./razorpay.client");
 let OrdersService = class OrdersService {
     prisma;
-    razorpayService;
-    configService;
-    constructor(prisma, razorpayService, configService) {
+    razorpay;
+    constructor(prisma, razorpay) {
         this.prisma = prisma;
-        this.razorpayService = razorpayService;
-        this.configService = configService;
+        this.razorpay = razorpay;
     }
     async createOrder(userId, dto) {
-        console.log(">>>>>>>>>>>>>>>>>>", dto);
         const address = await this.prisma.address.findFirst({
             where: {
                 id: dto.addressId,
@@ -268,7 +230,31 @@ let OrdersService = class OrdersService {
         };
     }
     async getUserOrders(userId) {
-        console.log('inside getUserOrders');
+        const orders = await this.prisma.order.findMany({
+            where: { uid: userId },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                items: {
+                    include: {
+                        product: {
+                            include: { images: { take: 1 } },
+                        },
+                        placements: true,
+                    },
+                },
+            },
+        });
+        return {
+            success: true,
+            data: orders.map((order) => ({
+                ...order,
+                totalAmount: Number(order.totalAmount),
+                items: order.items.map((item) => ({
+                    ...item,
+                    unitPrice: Number(item.unitPrice),
+                })),
+            })),
+        };
     }
     async getOrderById(userId, identifier) {
         const parsedId = parseInt(identifier, 10);
@@ -297,69 +283,64 @@ let OrdersService = class OrdersService {
         }
         return { message: 'Order fetched successfully', order };
     }
-    async createRazorpayOrder(orderId) {
-        const order = await this.prisma.order.findUnique({
-            where: { id: orderId },
+    async createRazorpayOrder(userId, dto) {
+        const order = await this.prisma.order.findFirst({
+            where: { id: dto.orderId, uid: userId },
         });
         if (!order) {
-            throw new common_1.NotFoundException(`Order with ID ${orderId} not found`);
+            throw new common_1.NotFoundException('Order not found or access denied');
         }
-        const amountInPaise = Math.round(Number(order.totalAmount) * 100);
-        const options = {
-            amount: amountInPaise,
-            currency: 'INR',
-            receipt: order.orderCode,
-        };
-        try {
-            const razorpayOrder = await this.razorpayService.instance.orders.create(options);
-            return {
-                success: true,
-                data: {
-                    razorpayOrderId: razorpayOrder.id,
-                    amount: razorpayOrder.amount,
-                    currency: razorpayOrder.currency,
-                    keyId: this.configService.get('RAZORPAY_KEY_ID'),
-                },
-            };
+        if (order.paymentStatus === 'PAID') {
+            throw new common_1.BadRequestException('This order has already been paid for');
         }
-        catch (error) {
-            throw new common_1.BadRequestException('Failed to create Razorpay payment order');
-        }
-    }
-    async verifyPayment(dto) {
-        const secret = this.configService.getOrThrow('RAZORPAY_KEY_SECRET');
-        const generatedSignature = crypto
-            .createHmac('sha256', secret)
-            .update(`${dto.razorpayOrderId}|${dto.razorpayPaymentId}`)
-            .digest('hex');
-        if (generatedSignature !== dto.razorpaySignature) {
-            throw new common_1.BadRequestException('Invalid payment signature verification failed');
-        }
-        const updatedOrder = await this.prisma.order.update({
-            where: { id: dto.orderId },
-            data: {
-                paymentStatus: 'PAID',
-                status: 'PROCESSING',
-            },
-            select: {
-                id: true,
-                orderCode: true,
-                status: true,
-                paymentStatus: true,
-            },
+        const razorpayOrder = await this.razorpay.createOrder(Number(order.totalAmount), order.orderCode);
+        await this.prisma.order.update({
+            where: { id: order.id },
+            data: { razorpayOrderId: razorpayOrder.id },
         });
         return {
             success: true,
-            message: 'Payment verified successfully',
-            data: updatedOrder,
+            data: {
+                razorpayOrderId: razorpayOrder.id,
+                amount: razorpayOrder.amount,
+                currency: razorpayOrder.currency,
+                keyId: this.razorpay.getPublicKeyId(),
+            },
         };
+    }
+    async verifyPayment(userId, dto) {
+        const order = await this.prisma.order.findFirst({
+            where: { id: dto.orderId, uid: userId },
+        });
+        if (!order) {
+            throw new common_1.NotFoundException('Order not found or access denied');
+        }
+        if (order.razorpayOrderId !== dto.razorpayOrderId) {
+            throw new common_1.BadRequestException('Razorpay order id does not match this order');
+        }
+        const isValid = this.razorpay.verifySignature(dto.razorpayOrderId, dto.razorpayPaymentId, dto.razorpaySignature);
+        if (!isValid) {
+            await this.prisma.order.update({
+                where: { id: order.id },
+                data: { paymentStatus: 'FAILED' },
+            });
+            throw new common_1.BadRequestException('Payment signature verification failed');
+        }
+        await this.prisma.order.update({
+            where: { id: order.id },
+            data: {
+                paymentStatus: 'PAID',
+                razorpayPaymentId: dto.razorpayPaymentId,
+                status: 'PROCESSING',
+            },
+        });
+        return { success: true, message: 'Payment verified successfully' };
     }
 };
 exports.OrdersService = OrdersService;
 exports.OrdersService = OrdersService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        razorpay_service_1.RazorpayService,
-        config_1.ConfigService])
+        razorpay_client_1.RazorpayClient])
 ], OrdersService);
 //# sourceMappingURL=orders.service.js.map

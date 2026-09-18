@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
+const passport_1 = require("@nestjs/passport");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -27,6 +28,22 @@ let AuthController = class AuthController {
     }
     async login(dto) {
         return this.authService.login(dto);
+    }
+    async googleAuth() { }
+    async googleAuthRedirect(req, res) {
+        const result = await this.authService.validateOAuthUser(req.user);
+        this.redirectWithSession(res, result);
+    }
+    async facebookAuth() { }
+    async facebookAuthRedirect(req, res) {
+        const result = await this.authService.validateOAuthUser(req.user);
+        this.redirectWithSession(res, result);
+    }
+    redirectWithSession(res, result) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const token = encodeURIComponent(result.access_token);
+        const user = encodeURIComponent(JSON.stringify(result.user));
+        res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${user}`);
     }
 };
 exports.AuthController = AuthController;
@@ -44,6 +61,38 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Get)('google'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "googleAuth", null);
+__decorate([
+    (0, common_1.Get)('google/callback'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('google')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "googleAuthRedirect", null);
+__decorate([
+    (0, common_1.Get)('facebook'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('facebook')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "facebookAuth", null);
+__decorate([
+    (0, common_1.Get)('facebook/callback'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('facebook')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "facebookAuthRedirect", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

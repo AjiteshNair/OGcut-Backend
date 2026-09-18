@@ -12,9 +12,9 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
-import { OrdersService } from './orders.service';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { OrdersService } from './orders.service';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -54,14 +54,16 @@ export class OrdersController {
   async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
     return this.ordersService.createOrder(req.user.userId, dto);
   }
-  
-// @Post()
-// async createOrder(
-//   @User('id') userId: number, 
-//   @Body() dto: CreateOrderDto,
-// ) {
-//   return this.ordersService.createOrder(userId, dto);
-// }
+
+  @Post('create-razorpay-order')
+  async createRazorpayOrder(@Req() req: any, @Body() dto: CreateRazorpayOrderDto) {
+    return this.ordersService.createRazorpayOrder(req.user.userId, dto);
+  }
+
+  @Post('verify-payment')
+  async verifyPayment(@Req() req: any, @Body() dto: VerifyPaymentDto) {
+    return this.ordersService.verifyPayment(req.user.userId, dto);
+  }
 
   @Get()
   async getUserOrders(@Req() req: any) {
@@ -72,19 +74,4 @@ export class OrdersController {
   async getOrderById(@Req() req: any, @Param('id') id: string) {
     return this.ordersService.getOrderById(req.user.userId, id);
   }
-
-  // razorpay
-
-  // 1. Triggered when user clicks "Pay" on frontend
-  @Post('create-razorpay-order')
-  async createRazorpayOrder(@Body() dto: CreateRazorpayOrderDto) {
-    return this.ordersService.createRazorpayOrder(dto.orderId);
-  }
-
-  // 2. Triggered after user completes Razorpay payment modal
-  @Post('verify-payment')
-  async verifyPayment(@Body() dto: VerifyPaymentDto) {
-    return this.ordersService.verifyPayment(dto);
-  }
-
 }

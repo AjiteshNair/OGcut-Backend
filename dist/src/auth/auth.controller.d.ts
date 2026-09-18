@@ -1,6 +1,7 @@
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { Response } from 'express';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
@@ -24,4 +25,9 @@ export declare class AuthController {
             role: import("@prisma/client").$Enums.Role;
         };
     }>;
+    googleAuth(): Promise<void>;
+    googleAuthRedirect(req: any, res: Response): Promise<void>;
+    facebookAuth(): Promise<void>;
+    facebookAuthRedirect(req: any, res: Response): Promise<void>;
+    private redirectWithSession;
 }

@@ -2,4 +2,8 @@ node_modules
 # Keep environment variables out of version control
 .env
 
-/generated/prisma
+# Prisma client is generated into src/generated/prisma (see schema.prisma
+# generator config) — this previously said "/generated/prisma", which
+# doesn't match that path, so the generated client was being committed.
+src/generated
+dist

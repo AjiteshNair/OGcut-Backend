@@ -100,6 +100,10 @@ model Order {
   createdAt      DateTime    @default(now())
   paymentStatus  PaymentStatus? @default(UNPAID)
 
+  // Razorpay references, set once payment is initiated / confirmed.
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+
   user  User        @relation(fields: [uid], references: [id], onDelete: Restrict)
   items OrderItem[]
 

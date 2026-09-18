@@ -16,18 +16,21 @@ const passport_google_oauth20_1 = require("passport-google-oauth20");
 let GoogleStrategy = class GoogleStrategy extends (0, passport_1.PassportStrategy)(passport_google_oauth20_1.Strategy, 'google') {
     constructor() {
         super({
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: process.env.GOOGLE_CALLBACK_URL,
+            clientID: process.env.GOOGLE_CLIENT_ID || 'not-configured',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'not-configured',
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3001/api/auth/google/callback',
             scope: ['email', 'profile'],
         });
     }
     async validate(accessToken, refreshToken, profile, done) {
-        const { name, emails } = profile;
+        const email = profile.emails?.[0]?.value;
+        if (!email) {
+            return done(new Error('Google account has no accessible email address'), false);
+        }
         const user = {
-            email: emails[0].value,
-            first_name: name.givenName,
-            last_name: name.familyName,
+            email,
+            first_name: profile.name?.givenName || profile.displayName || 'Google User',
+            last_name: profile.name?.familyName,
         };
         done(null, user);
     }

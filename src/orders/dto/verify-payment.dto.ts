@@ -1,19 +1,19 @@
-// src/orders/dto/verify-payment.dto.ts
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsPositive, IsString } from 'class-validator';
 
 export class VerifyPaymentDto {
-  @IsNumber()
-  orderId!: number;
+  @IsInt()
+  @IsPositive()
+  orderId: number;
 
   @IsString()
   @IsNotEmpty()
-  razorpayOrderId!: string;
+  razorpayOrderId: string;
 
   @IsString()
   @IsNotEmpty()
-  razorpayPaymentId!: string;
+  razorpayPaymentId: string;
 
   @IsString()
   @IsNotEmpty()
-  razorpaySignature!: string;
+  razorpaySignature: string;
 }

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
-import { RazorpayService } from 'src/razorpay/razorpay.service';
+import { RazorpayClient } from './razorpay.client';
 
 @Module({
   controllers: [OrdersController],
-  providers: [OrdersService, RazorpayService],
+  providers: [OrdersService, RazorpayClient],
   exports: [OrdersService],
 })
 export class OrdersModule {}

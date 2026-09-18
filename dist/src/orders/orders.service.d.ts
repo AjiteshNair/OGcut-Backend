@@ -1,15 +1,14 @@
 import { Prisma } from '@prisma/client';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { RazorpayService } from '../razorpay/razorpay.service';
-import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { RazorpayClient } from './razorpay.client';
 export declare class OrdersService {
     private readonly prisma;
-    private readonly razorpayService;
-    private readonly configService;
-    constructor(prisma: PrismaService, razorpayService: RazorpayService, configService: ConfigService);
+    private readonly razorpay;
+    constructor(prisma: PrismaService, razorpay: RazorpayClient);
     createOrder(userId: number, dto: CreateOrderDto): Promise<{
         message: string;
         order: {
@@ -150,7 +149,56 @@ export declare class OrdersService {
             trackingNumber: string | null;
         };
     }>;
-    getUserOrders(userId: string): Promise<void>;
+    getUserOrders(userId: number): Promise<{
+        success: boolean;
+        data: {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+                product: {
+                    images: {
+                        id: number;
+                        pid: number;
+                        imgurl: string;
+                        sortWeight: number;
+                    }[];
+                } & {
+                    name: string;
+                    id: number;
+                    isActive: boolean;
+                    desc: string;
+                    price: Prisma.Decimal;
+                    type: import("@prisma/client").$Enums.ProductType;
+                };
+                placements: {
+                    id: number;
+                    imgurl: string;
+                    oiid: number;
+                    place: import("@prisma/client").$Enums.PlacementZone;
+                    xvalue: number;
+                    yvalue: number;
+                    zoom: number;
+                    height: number | null;
+                    width: number | null;
+                }[];
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+            }[];
+            id: number;
+            createdAt: Date;
+            address: Prisma.JsonValue;
+            uid: number;
+            orderCode: string;
+            coupon: string | null;
+            status: import("@prisma/client").$Enums.OrderStatus;
+            trackingNumber: string | null;
+            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        }[];
+    }>;
     getOrderById(userId: number, identifier: string): Promise<{
         message: string;
         order: {
@@ -203,23 +251,17 @@ export declare class OrdersService {
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
         };
     }>;
-    createRazorpayOrder(orderId: number): Promise<{
+    createRazorpayOrder(userId: number, dto: CreateRazorpayOrderDto): Promise<{
         success: boolean;
         data: {
             razorpayOrderId: string;
-            amount: string | number;
+            amount: number;
             currency: string;
-            keyId: string | undefined;
+            keyId: string;
         };
     }>;
-    verifyPayment(dto: VerifyPaymentDto): Promise<{
+    verifyPayment(userId: number, dto: VerifyPaymentDto): Promise<{
         success: boolean;
         message: string;
-        data: {
-            id: number;
-            orderCode: string;
-            status: import("@prisma/client").$Enums.OrderStatus;
-            paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
-        };
     }>;
 }

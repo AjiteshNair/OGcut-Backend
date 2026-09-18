@@ -16,7 +16,7 @@ class CreateRazorpayOrderDto {
 }
 exports.CreateRazorpayOrderDto = CreateRazorpayOrderDto;
 __decorate([
-    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsInt)(),
     (0, class_validator_1.IsPositive)(),
     __metadata("design:type", Number)
 ], CreateRazorpayOrderDto.prototype, "orderId", void 0);

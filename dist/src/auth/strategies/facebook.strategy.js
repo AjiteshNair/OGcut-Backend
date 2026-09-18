@@ -16,19 +16,19 @@ const passport_facebook_1 = require("passport-facebook");
 let FacebookStrategy = class FacebookStrategy extends (0, passport_1.PassportStrategy)(passport_facebook_1.Strategy, 'facebook') {
     constructor() {
         super({
-            clientID: process.env.FACEBOOK_APP_ID,
-            clientSecret: process.env.FACEBOOK_APP_SECRET,
-            callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+            clientID: process.env.FACEBOOK_APP_ID || 'not-configured',
+            clientSecret: process.env.FACEBOOK_APP_SECRET || 'not-configured',
+            callbackURL: process.env.FACEBOOK_CALLBACK_URL || 'http://localhost:3001/api/auth/facebook/callback',
             scope: 'email',
             profileFields: ['emails', 'name'],
         });
     }
     async validate(accessToken, refreshToken, profile, done) {
-        const { name, emails } = profile;
+        const email = profile.emails?.[0]?.value || `${profile.id}@facebook.com`;
         const user = {
-            email: emails ? emails[0].value : `${profile.id}@facebook.com`,
-            first_name: name.givenName,
-            last_name: name.familyName,
+            email,
+            first_name: profile.name?.givenName || profile.displayName || 'Facebook User',
+            last_name: profile.name?.familyName,
         };
         done(null, user);
     }

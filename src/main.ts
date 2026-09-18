@@ -6,29 +6,26 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: true, // Accepts requests from your frontend origin
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
+
   // 1. Set global API prefix so routes resolve to /api/...
   app.setGlobalPrefix('api');
 
   app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    transform: true, // <--- Essential for @Type conversion
-    transformOptions: { enableImplicitConversion: true },
-  }),
-);
+    new ValidationPipe({
+      whitelist: true,
+      transform: true, // <--- Essential for @Type conversion
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
   // 2. Increase payload size limit for base64 image strings
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
-  // 3. Enable CORS
+  // 3. Enable CORS for the frontend origin(s)
   app.enableCors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
 
