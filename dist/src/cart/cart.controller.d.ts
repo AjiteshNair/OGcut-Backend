@@ -50,6 +50,8 @@ export declare class CartController {
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
     getAdminOrders(page: number, limit: number): Promise<{
@@ -100,6 +102,8 @@ export declare class CartController {
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         })[];
         pagination: {
             total: number;
@@ -155,6 +159,8 @@ export declare class CartController {
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         trackingNumber: string | null;
         paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }>;
     updateOrderStatus(id: number, status: OrderStatus): Promise<{
         id: number;
@@ -167,6 +173,8 @@ export declare class CartController {
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         trackingNumber: string | null;
         paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }>;
 }
 export {};

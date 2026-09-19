@@ -15,6 +15,7 @@ export declare class AddressService {
         city: string;
         state: string;
         pincode: string;
+        isDefault: boolean;
     }>;
     findAllByUser(userId: number): Promise<{
         id: number;
@@ -28,6 +29,7 @@ export declare class AddressService {
         city: string;
         state: string;
         pincode: string;
+        isDefault: boolean;
     }[]>;
     delete(userId: number, addressId: number): Promise<{
         id: number;
@@ -41,5 +43,6 @@ export declare class AddressService {
         city: string;
         state: string;
         pincode: string;
+        isDefault: boolean;
     }>;
 }

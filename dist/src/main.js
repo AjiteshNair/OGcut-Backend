@@ -15,8 +15,12 @@ async function bootstrap() {
     }));
     app.use((0, express_1.json)({ limit: '50mb' }));
     app.use((0, express_1.urlencoded)({ limit: '50mb', extended: true }));
+    const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    if (process.env.FRONTEND_URL) {
+        allowedOrigins.push(process.env.FRONTEND_URL);
+    }
     app.enableCors({
-        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        origin: allowedOrigins,
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
     });

@@ -13,8 +13,8 @@ export class RazorpayClient {
   constructor(private readonly config: ConfigService) {}
 
   private get keyId(): string {
-    const key = this.config.get<string>('NEXT_PUBLIC_RAZORPAY_KEY_ID');
-    if (!key) throw new Error('NEXT_PUBLIC_RAZORPAY_KEY_ID is not configured');
+    const key = this.config.get<string>('RAZORPAY_KEY_ID');
+    if (!key) throw new Error('RAZORPAY_KEY_ID is not configured');
     return key;
   }
 

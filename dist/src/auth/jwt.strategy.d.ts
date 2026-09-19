@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Strategy } from 'passport-jwt';
 export interface JwtPayload {
-    sub: string;
+    sub: number;
     email: string;
     role: string;
 }
@@ -11,7 +11,7 @@ declare const JwtStrategy_base: new (...args: [opt: import("passport-jwt").Strat
 export declare class JwtStrategy extends JwtStrategy_base {
     constructor(configService: ConfigService);
     validate(payload: JwtPayload): Promise<{
-        userId: string;
+        userId: number;
         email: string;
         role: string;
     }>;

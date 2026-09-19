@@ -7,12 +7,17 @@ export class AddressService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateAddressDto) {
-    // if (dto.isDefault) {
-    //   await this.prisma.address.updateMany({
-    //     where: { uid: userId,isDefault: true },
-    //     // data: { isDefault: false },
-    //   });
-    // }
+    // A brand-new user's first address becomes their default automatically;
+    // otherwise it's default only if they explicitly asked for it.
+    const existingCount = await this.prisma.address.count({ where: { uid: userId } });
+    const shouldBeDefault = dto.isDefault ?? existingCount === 0;
+
+    if (shouldBeDefault) {
+      await this.prisma.address.updateMany({
+        where: { uid: userId, isDefault: true },
+        data: { isDefault: false },
+      });
+    }
 
     return this.prisma.address.create({
       data: {
@@ -27,7 +32,7 @@ export class AddressService {
         city: dto.city,
         state: dto.state,
         pincode: dto.pincode,
-        // isDefault: dto.isDefault ?? false,
+        isDefault: shouldBeDefault,
       },
     });
   }
@@ -35,10 +40,7 @@ export class AddressService {
   async findAllByUser(userId: number) {
     return this.prisma.address.findMany({
       where: { uid: userId },
-      orderBy: [
-        // { isDefault: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
   }
 

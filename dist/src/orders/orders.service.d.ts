@@ -44,6 +44,8 @@ export declare class OrdersService {
             totalAmount: Prisma.Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
     findAllForAdmin(): Promise<{
@@ -91,6 +93,8 @@ export declare class OrdersService {
             status: import("@prisma/client").$Enums.OrderStatus;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         }[];
     }>;
     findAdminOrderById(orderId: string): Promise<{
@@ -138,6 +142,8 @@ export declare class OrdersService {
             status: import("@prisma/client").$Enums.OrderStatus;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
     updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto): Promise<{
@@ -197,6 +203,8 @@ export declare class OrdersService {
             status: import("@prisma/client").$Enums.OrderStatus;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         }[];
     }>;
     getOrderById(userId: number, identifier: string): Promise<{
@@ -249,6 +257,8 @@ export declare class OrdersService {
             totalAmount: Prisma.Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
     createRazorpayOrder(userId: number, dto: CreateRazorpayOrderDto): Promise<{

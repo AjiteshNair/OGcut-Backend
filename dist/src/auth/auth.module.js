@@ -10,6 +10,7 @@ exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
+const config_1 = require("@nestjs/config");
 const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
@@ -24,10 +25,17 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             prisma_module_1.PrismaModule,
             passport_1.PassportModule,
-            jwt_1.JwtModule.register({
+            jwt_1.JwtModule.registerAsync({
                 global: true,
-                secret: process.env.JWT_SECRET || 'supersecretkey',
-                signOptions: { expiresIn: '7d' },
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (config) => {
+                    const secret = config.get('JWT_SECRET');
+                    if (!secret) {
+                        throw new Error('JWT_SECRET is not defined in environment variables');
+                    }
+                    return { secret, signOptions: { expiresIn: '7d' } };
+                },
             }),
         ],
         providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, google_strategy_1.GoogleStrategy, facebook_strategy_1.FacebookStrategy],

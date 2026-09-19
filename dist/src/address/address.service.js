@@ -18,6 +18,14 @@ let AddressService = class AddressService {
         this.prisma = prisma;
     }
     async create(userId, dto) {
+        const existingCount = await this.prisma.address.count({ where: { uid: userId } });
+        const shouldBeDefault = dto.isDefault ?? existingCount === 0;
+        if (shouldBeDefault) {
+            await this.prisma.address.updateMany({
+                where: { uid: userId, isDefault: true },
+                data: { isDefault: false },
+            });
+        }
         return this.prisma.address.create({
             data: {
                 user: {
@@ -31,15 +39,14 @@ let AddressService = class AddressService {
                 city: dto.city,
                 state: dto.state,
                 pincode: dto.pincode,
+                isDefault: shouldBeDefault,
             },
         });
     }
     async findAllByUser(userId) {
         return this.prisma.address.findMany({
             where: { uid: userId },
-            orderBy: [
-                { createdAt: 'desc' },
-            ],
+            orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
         });
     }
     async delete(userId, addressId) {

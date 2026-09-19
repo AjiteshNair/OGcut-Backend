@@ -15,7 +15,7 @@ export interface ProductResponse {
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(category?: string): Promise<ProductResponse[] | null> {
+  async findAll(category?: string): Promise<ProductResponse[]> {
     const products = await this.prisma.product.findMany({
       where: {
         isActive: true,
@@ -32,10 +32,6 @@ export class ProductsService {
         id: 'asc',
       },
     });
-
-    if (!products || products.length === 0) {
-      return null;
-    }
 
     return products.map((product) => ({
       id: product.id,

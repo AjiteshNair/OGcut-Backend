@@ -51,6 +51,8 @@ export declare class OrdersController {
             status: import("@prisma/client").$Enums.OrderStatus;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         }[];
     }>;
     getAdminOrderById(id: string): Promise<{
@@ -98,6 +100,8 @@ export declare class OrdersController {
             status: import("@prisma/client").$Enums.OrderStatus;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
     updateOrderStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
@@ -144,6 +148,8 @@ export declare class OrdersController {
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
     createRazorpayOrder(req: any, dto: CreateRazorpayOrderDto): Promise<{
@@ -207,6 +213,8 @@ export declare class OrdersController {
             status: import("@prisma/client").$Enums.OrderStatus;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         }[];
     }>;
     getOrderById(req: any, id: string): Promise<{
@@ -259,6 +267,8 @@ export declare class OrdersController {
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         };
     }>;
 }

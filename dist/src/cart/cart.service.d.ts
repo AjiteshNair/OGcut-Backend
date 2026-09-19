@@ -80,6 +80,8 @@ export declare class CartService {
             totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
         })[];
         pagination: {
             total: number;
@@ -135,6 +137,8 @@ export declare class CartService {
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         trackingNumber: string | null;
         paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }>;
     updateOrderStatus(id: number, status: OrderStatus): Promise<{
         id: number;
@@ -147,6 +151,8 @@ export declare class CartService {
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         trackingNumber: string | null;
         paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }>;
     processAndSaveOrder(payload: CustomizationPayload): Promise<{
         items: ({
@@ -181,5 +187,7 @@ export declare class CartService {
         totalAmount: import("@prisma/client-runtime-utils").Decimal;
         trackingNumber: string | null;
         paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }>;
 }

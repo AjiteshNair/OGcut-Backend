@@ -20,6 +20,7 @@ class CreateAddressDto {
     city;
     state;
     pincode;
+    isDefault;
 }
 exports.CreateAddressDto = CreateAddressDto;
 __decorate([
@@ -62,4 +63,9 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateAddressDto.prototype, "pincode", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CreateAddressDto.prototype, "isDefault", void 0);
 //# sourceMappingURL=create-address.dto.js.map

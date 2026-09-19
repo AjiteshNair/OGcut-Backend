@@ -23,8 +23,15 @@ async function bootstrap() {
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
   // 3. Enable CORS for the frontend origin(s)
+  // Was hardcoded to localhost only, which would silently block every
+  // request from a real deployed frontend — FRONTEND_URL (also used for
+  // the OAuth redirect) is now included alongside the local dev origins.
+  const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: allowedOrigins,
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });

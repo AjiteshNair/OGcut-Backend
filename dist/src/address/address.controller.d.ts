@@ -22,6 +22,7 @@ export declare class AddressController {
         city: string;
         state: string;
         pincode: string;
+        isDefault: boolean;
     }>;
     findAllByUser(req: AuthenticatedRequest): Promise<{
         id: number;
@@ -35,6 +36,7 @@ export declare class AddressController {
         city: string;
         state: string;
         pincode: string;
+        isDefault: boolean;
     }[]>;
     delete(req: AuthenticatedRequest, id: number): Promise<{
         id: number;
@@ -48,6 +50,7 @@ export declare class AddressController {
         city: string;
         state: string;
         pincode: string;
+        isDefault: boolean;
     }>;
 }
 export {};
