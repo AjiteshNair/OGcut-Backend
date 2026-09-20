@@ -9,6 +9,8 @@ export declare class OrdersService {
     private readonly prisma;
     private readonly razorpay;
     constructor(prisma: PrismaService, razorpay: RazorpayClient);
+    private static readonly CUSTOMER_ORDER_INCLUDE;
+    private static readonly ADMIN_ORDER_INCLUDE;
     createOrder(userId: number, dto: CreateOrderDto): Promise<{
         message: string;
         order: {
@@ -54,22 +56,6 @@ export declare class OrdersService {
             totalAmount: number;
             items: {
                 unitPrice: number;
-                product: {
-                    name: string;
-                    id: number;
-                    type: import("@prisma/client").$Enums.ProductType;
-                };
-                placements: {
-                    id: number;
-                    imgurl: string;
-                    oiid: number;
-                    place: import("@prisma/client").$Enums.PlacementZone;
-                    xvalue: number;
-                    yvalue: number;
-                    zoom: number;
-                    height: number | null;
-                    width: number | null;
-                }[];
                 id: number;
                 pid: number;
                 oid: number;
@@ -80,9 +66,17 @@ export declare class OrdersService {
             user: {
                 id: number;
                 email: string;
+                passwordHash: string;
                 firstName: string;
                 lastName: string | null;
+                role: import("@prisma/client").$Enums.Role;
                 phone: string | null;
+                createdAt: Date;
+                isActive: boolean;
+            };
+            _count: {
+                user: number;
+                items: number;
             };
             id: number;
             createdAt: Date;
@@ -103,22 +97,6 @@ export declare class OrdersService {
             totalAmount: number;
             items: {
                 unitPrice: number;
-                product: {
-                    name: string;
-                    id: number;
-                    type: import("@prisma/client").$Enums.ProductType;
-                };
-                placements: {
-                    id: number;
-                    imgurl: string;
-                    oiid: number;
-                    place: import("@prisma/client").$Enums.PlacementZone;
-                    xvalue: number;
-                    yvalue: number;
-                    zoom: number;
-                    height: number | null;
-                    width: number | null;
-                }[];
                 id: number;
                 pid: number;
                 oid: number;
@@ -129,9 +107,17 @@ export declare class OrdersService {
             user: {
                 id: number;
                 email: string;
+                passwordHash: string;
                 firstName: string;
                 lastName: string | null;
+                role: import("@prisma/client").$Enums.Role;
                 phone: string | null;
+                createdAt: Date;
+                isActive: boolean;
+            };
+            _count: {
+                user: number;
+                items: number;
             };
             id: number;
             createdAt: Date;
@@ -161,32 +147,6 @@ export declare class OrdersService {
             totalAmount: number;
             items: {
                 unitPrice: number;
-                product: {
-                    images: {
-                        id: number;
-                        pid: number;
-                        imgurl: string;
-                        sortWeight: number;
-                    }[];
-                } & {
-                    name: string;
-                    id: number;
-                    isActive: boolean;
-                    desc: string;
-                    price: Prisma.Decimal;
-                    type: import("@prisma/client").$Enums.ProductType;
-                };
-                placements: {
-                    id: number;
-                    imgurl: string;
-                    oiid: number;
-                    place: import("@prisma/client").$Enums.PlacementZone;
-                    xvalue: number;
-                    yvalue: number;
-                    zoom: number;
-                    height: number | null;
-                    width: number | null;
-                }[];
                 id: number;
                 pid: number;
                 oid: number;
@@ -194,6 +154,21 @@ export declare class OrdersService {
                 size: string;
                 color: string | null;
             }[];
+            user: {
+                id: number;
+                email: string;
+                passwordHash: string;
+                firstName: string;
+                lastName: string | null;
+                role: import("@prisma/client").$Enums.Role;
+                phone: string | null;
+                createdAt: Date;
+                isActive: boolean;
+            };
+            _count: {
+                user: number;
+                items: number;
+            };
             id: number;
             createdAt: Date;
             address: Prisma.JsonValue;
@@ -210,34 +185,22 @@ export declare class OrdersService {
     getOrderById(userId: number, identifier: string): Promise<{
         message: string;
         order: {
-            items: ({
-                product: {
-                    images: {
-                        id: number;
-                        pid: number;
-                        imgurl: string;
-                        sortWeight: number;
-                    }[];
-                } & {
-                    name: string;
-                    id: number;
-                    isActive: boolean;
-                    desc: string;
-                    price: Prisma.Decimal;
-                    type: import("@prisma/client").$Enums.ProductType;
-                };
-                placements: {
-                    id: number;
-                    imgurl: string;
-                    oiid: number;
-                    place: import("@prisma/client").$Enums.PlacementZone;
-                    xvalue: number;
-                    yvalue: number;
-                    zoom: number;
-                    height: number | null;
-                    width: number | null;
-                }[];
-            } & {
+            user: {
+                id: number;
+                email: string;
+                passwordHash: string;
+                firstName: string;
+                lastName: string | null;
+                role: import("@prisma/client").$Enums.Role;
+                phone: string | null;
+                createdAt: Date;
+                isActive: boolean;
+            };
+            _count: {
+                user: number;
+                items: number;
+            };
+            items: {
                 id: number;
                 pid: number;
                 oid: number;
@@ -245,7 +208,7 @@ export declare class OrdersService {
                 size: string;
                 color: string | null;
                 unitPrice: Prisma.Decimal;
-            })[];
+            }[];
         } & {
             id: number;
             createdAt: Date;

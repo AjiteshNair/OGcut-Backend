@@ -19,6 +19,32 @@ export class OrdersService {
     private readonly razorpay: RazorpayClient,
   ) {}
 
+  // Shared Prisma `include` shapes — previously copy-pasted identically
+  // across getUserOrders/getOrderById (customer-facing) and
+  // findAllForAdmin/findAdminOrderById (admin-facing). One change here
+  // now updates every query that uses it instead of needing to find and
+  // edit all four call sites in sync.
+  private static readonly CUSTOMER_ORDER_INCLUDE: Prisma.OrderInclude = {
+    items: {
+      include: {
+        product: { include: { images: { take: 1 } } },
+        placements: true,
+      },
+    },
+  };
+
+  private static readonly ADMIN_ORDER_INCLUDE: Prisma.OrderInclude = {
+    user: {
+      select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+    },
+    items: {
+      include: {
+        product: { select: { id: true, name: true, type: true } },
+        placements: true,
+      },
+    },
+  };
+
   async createOrder(userId: number, dto: CreateOrderDto) {
     // 1. Fetch user address to store as a permanent JSON snapshot on the Order
     const address = await this.prisma.address.findFirst({
@@ -137,29 +163,7 @@ export class OrdersService {
   async findAllForAdmin() {
     const orders = await this.prisma.order.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-          },
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-              },
-            },
-            placements: true,
-          },
-        },
-      },
+      include: OrdersService.ADMIN_ORDER_INCLUDE,
     });
 
     return {
@@ -183,29 +187,7 @@ export class OrdersService {
 
     const order = await this.prisma.order.findUnique({
       where: { id: numericId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-          },
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-              },
-            },
-            placements: true,
-          },
-        },
-      },
+      include: OrdersService.ADMIN_ORDER_INCLUDE,
     });
 
     if (!order) {
@@ -272,16 +254,7 @@ export class OrdersService {
     const orders = await this.prisma.order.findMany({
       where: { uid: userId },
       orderBy: { createdAt: 'desc' },
-      include: {
-        items: {
-          include: {
-            product: {
-              include: { images: { take: 1 } },
-            },
-            placements: true,
-          },
-        },
-      },
+      include: OrdersService.CUSTOMER_ORDER_INCLUDE,
     });
 
     return {
@@ -309,16 +282,7 @@ export class OrdersService {
           { orderCode: identifier },
         ],
       },
-      include: {
-        items: {
-          include: {
-            product: {
-              include: { images: { take: 1 } },
-            },
-            placements: true,
-          },
-        },
-      },
+      include: OrdersService.CUSTOMER_ORDER_INCLUDE,
     });
 
     if (!order) {

@@ -16,6 +16,7 @@ exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const admin_guard_1 = require("../auth/guards/admin.guard");
+const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const create_order_dto_1 = require("./dto/create-order.dto");
 const update_order_status_dto_1 = require("./dto/update-order-status.dto");
 const create_razorpay_order_dto_1 = require("./dto/create-razorpay-order.dto");
@@ -35,20 +36,20 @@ let OrdersController = class OrdersController {
     async updateOrderStatus(id, dto) {
         return this.ordersService.updateOrderStatus(id, dto);
     }
-    async createOrder(req, dto) {
-        return this.ordersService.createOrder(req.user.userId, dto);
+    async createOrder(user, dto) {
+        return this.ordersService.createOrder(user.userId, dto);
     }
-    async createRazorpayOrder(req, dto) {
-        return this.ordersService.createRazorpayOrder(req.user.userId, dto);
+    async createRazorpayOrder(user, dto) {
+        return this.ordersService.createRazorpayOrder(user.userId, dto);
     }
-    async verifyPayment(req, dto) {
-        return this.ordersService.verifyPayment(req.user.userId, dto);
+    async verifyPayment(user, dto) {
+        return this.ordersService.verifyPayment(user.userId, dto);
     }
-    async getUserOrders(req) {
-        return this.ordersService.getUserOrders(req.user.userId);
+    async getUserOrders(user) {
+        return this.ordersService.getUserOrders(user.userId);
     }
-    async getOrderById(req, id) {
-        return this.ordersService.getOrderById(req.user.userId, id);
+    async getOrderById(user, id) {
+        return this.ordersService.getOrderById(user.userId, id);
     }
 };
 exports.OrdersController = OrdersController;
@@ -78,7 +79,7 @@ __decorate([
 ], OrdersController.prototype, "updateOrderStatus", null);
 __decorate([
     (0, common_1.Post)(),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, create_order_dto_1.CreateOrderDto]),
@@ -86,7 +87,7 @@ __decorate([
 ], OrdersController.prototype, "createOrder", null);
 __decorate([
     (0, common_1.Post)('create-razorpay-order'),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, create_razorpay_order_dto_1.CreateRazorpayOrderDto]),
@@ -94,7 +95,7 @@ __decorate([
 ], OrdersController.prototype, "createRazorpayOrder", null);
 __decorate([
     (0, common_1.Post)('verify-payment'),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, verify_payment_dto_1.VerifyPaymentDto]),
@@ -102,14 +103,14 @@ __decorate([
 ], OrdersController.prototype, "verifyPayment", null);
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "getUserOrders", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),

@@ -6,20 +6,13 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { RequestUser } from '../auth/types/authenticated-request';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    userId: number;
-    email: string;
-    role: string;
-  };
-}
 
 @Controller('addresses')
 @UseGuards(JwtAuthGuard)
@@ -27,23 +20,17 @@ export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
   @Post()
-  async create(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: CreateAddressDto,
-  ) {
-    return this.addressService.create(req.user.userId, dto);
+  async create(@CurrentUser() user: RequestUser, @Body() dto: CreateAddressDto) {
+    return this.addressService.create(user.userId, dto);
   }
 
   @Get()
-  async findAllByUser(@Req() req: AuthenticatedRequest) {
-    return this.addressService.findAllByUser(req.user.userId);
+  async findAllByUser(@CurrentUser() user: RequestUser) {
+    return this.addressService.findAllByUser(user.userId);
   }
 
   @Delete(':id')
-  async delete(
-    @Req() req: AuthenticatedRequest,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.addressService.delete(req.user.userId, id);
+  async delete(@CurrentUser() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
+    return this.addressService.delete(user.userId, id);
   }
 }

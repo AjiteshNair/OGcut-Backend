@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var OrdersService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersService = void 0;
 const common_1 = require("@nestjs/common");
@@ -15,12 +16,32 @@ const crypto_1 = require("crypto");
 const prisma_service_1 = require("../prisma/prisma.service");
 const razorpay_client_1 = require("./razorpay.client");
 let OrdersService = class OrdersService {
+    static { OrdersService_1 = this; }
     prisma;
     razorpay;
     constructor(prisma, razorpay) {
         this.prisma = prisma;
         this.razorpay = razorpay;
     }
+    static CUSTOMER_ORDER_INCLUDE = {
+        items: {
+            include: {
+                product: { include: { images: { take: 1 } } },
+                placements: true,
+            },
+        },
+    };
+    static ADMIN_ORDER_INCLUDE = {
+        user: {
+            select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+        },
+        items: {
+            include: {
+                product: { select: { id: true, name: true, type: true } },
+                placements: true,
+            },
+        },
+    };
     async createOrder(userId, dto) {
         const address = await this.prisma.address.findFirst({
             where: {
@@ -115,29 +136,7 @@ let OrdersService = class OrdersService {
     async findAllForAdmin() {
         const orders = await this.prisma.order.findMany({
             orderBy: { createdAt: 'desc' },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        email: true,
-                        phone: true,
-                    },
-                },
-                items: {
-                    include: {
-                        product: {
-                            select: {
-                                id: true,
-                                name: true,
-                                type: true,
-                            },
-                        },
-                        placements: true,
-                    },
-                },
-            },
+            include: OrdersService_1.ADMIN_ORDER_INCLUDE,
         });
         return {
             success: true,
@@ -158,29 +157,7 @@ let OrdersService = class OrdersService {
         }
         const order = await this.prisma.order.findUnique({
             where: { id: numericId },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        email: true,
-                        phone: true,
-                    },
-                },
-                items: {
-                    include: {
-                        product: {
-                            select: {
-                                id: true,
-                                name: true,
-                                type: true,
-                            },
-                        },
-                        placements: true,
-                    },
-                },
-            },
+            include: OrdersService_1.ADMIN_ORDER_INCLUDE,
         });
         if (!order) {
             throw new common_1.NotFoundException(`Order with ID ${orderId} not found`);
@@ -233,16 +210,7 @@ let OrdersService = class OrdersService {
         const orders = await this.prisma.order.findMany({
             where: { uid: userId },
             orderBy: { createdAt: 'desc' },
-            include: {
-                items: {
-                    include: {
-                        product: {
-                            include: { images: { take: 1 } },
-                        },
-                        placements: true,
-                    },
-                },
-            },
+            include: OrdersService_1.CUSTOMER_ORDER_INCLUDE,
         });
         return {
             success: true,
@@ -267,16 +235,7 @@ let OrdersService = class OrdersService {
                     { orderCode: identifier },
                 ],
             },
-            include: {
-                items: {
-                    include: {
-                        product: {
-                            include: { images: { take: 1 } },
-                        },
-                        placements: true,
-                    },
-                },
-            },
+            include: OrdersService_1.CUSTOMER_ORDER_INCLUDE,
         });
         if (!order) {
             throw new common_1.NotFoundException('Order not found or access denied');
@@ -338,7 +297,7 @@ let OrdersService = class OrdersService {
     }
 };
 exports.OrdersService = OrdersService;
-exports.OrdersService = OrdersService = __decorate([
+exports.OrdersService = OrdersService = OrdersService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         razorpay_client_1.RazorpayClient])

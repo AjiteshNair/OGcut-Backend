@@ -1,15 +1,9 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-
-export interface AuthenticatedRequest extends Request {
-  user: {
-    userId: number;
-    email: string;
-    role: string;
-  };
-}
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { RequestUser } from '../auth/types/authenticated-request';
 
 @ApiTags('users')
 @Controller('users')
@@ -20,7 +14,7 @@ export class UsersController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Get current logged-in user details' })
-  getProfile(@Req() req: AuthenticatedRequest) {
-    return this.usersService.getUserProfile(req.user.userId);
+  getProfile(@CurrentUser() user: RequestUser) {
+    return this.usersService.getUserProfile(user.userId);
   }
 }

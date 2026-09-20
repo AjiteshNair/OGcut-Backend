@@ -1,16 +1,10 @@
+import type { RequestUser } from '../auth/types/authenticated-request';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
-interface AuthenticatedRequest extends Request {
-    user: {
-        userId: number;
-        email: string;
-        role: string;
-    };
-}
 export declare class AddressController {
     private readonly addressService;
     constructor(addressService: AddressService);
-    create(req: AuthenticatedRequest, dto: CreateAddressDto): Promise<{
+    create(user: RequestUser, dto: CreateAddressDto): Promise<{
         id: number;
         phone: string;
         createdAt: Date;
@@ -24,7 +18,7 @@ export declare class AddressController {
         pincode: string;
         isDefault: boolean;
     }>;
-    findAllByUser(req: AuthenticatedRequest): Promise<{
+    findAllByUser(user: RequestUser): Promise<{
         id: number;
         phone: string;
         createdAt: Date;
@@ -38,7 +32,7 @@ export declare class AddressController {
         pincode: string;
         isDefault: boolean;
     }[]>;
-    delete(req: AuthenticatedRequest, id: number): Promise<{
+    delete(user: RequestUser, id: number): Promise<{
         id: number;
         phone: string;
         createdAt: Date;
@@ -53,4 +47,3 @@ export declare class AddressController {
         isDefault: boolean;
     }>;
 }
-export {};

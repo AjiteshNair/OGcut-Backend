@@ -1,15 +1,9 @@
 import { UsersService } from './users.service';
-export interface AuthenticatedRequest extends Request {
-    user: {
-        userId: number;
-        email: string;
-        role: string;
-    };
-}
+import type { RequestUser } from '../auth/types/authenticated-request';
 export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
-    getProfile(req: AuthenticatedRequest): Promise<{
+    getProfile(user: RequestUser): Promise<{
         id: number;
         email: string;
         firstName: string;

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddressController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const address_service_1 = require("./address.service");
 const create_address_dto_1 = require("./dto/create-address.dto");
 let AddressController = class AddressController {
@@ -22,20 +23,20 @@ let AddressController = class AddressController {
     constructor(addressService) {
         this.addressService = addressService;
     }
-    async create(req, dto) {
-        return this.addressService.create(req.user.userId, dto);
+    async create(user, dto) {
+        return this.addressService.create(user.userId, dto);
     }
-    async findAllByUser(req) {
-        return this.addressService.findAllByUser(req.user.userId);
+    async findAllByUser(user) {
+        return this.addressService.findAllByUser(user.userId);
     }
-    async delete(req, id) {
-        return this.addressService.delete(req.user.userId, id);
+    async delete(user, id) {
+        return this.addressService.delete(user.userId, id);
     }
 };
 exports.AddressController = AddressController;
 __decorate([
     (0, common_1.Post)(),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, create_address_dto_1.CreateAddressDto]),
@@ -43,14 +44,14 @@ __decorate([
 ], AddressController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AddressController.prototype, "findAllByUser", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Req)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Number]),
