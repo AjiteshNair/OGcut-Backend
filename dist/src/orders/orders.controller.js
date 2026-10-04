@@ -22,28 +22,34 @@ const update_order_status_dto_1 = require("./dto/update-order-status.dto");
 const create_razorpay_order_dto_1 = require("./dto/create-razorpay-order.dto");
 const verify_payment_dto_1 = require("./dto/verify-payment.dto");
 const orders_service_1 = require("./orders.service");
+const admin_orders_service_1 = require("./admin-orders.service");
+const order_payments_service_1 = require("./order-payments.service");
 let OrdersController = class OrdersController {
     ordersService;
-    constructor(ordersService) {
+    adminOrdersService;
+    orderPaymentsService;
+    constructor(ordersService, adminOrdersService, orderPaymentsService) {
         this.ordersService = ordersService;
+        this.adminOrdersService = adminOrdersService;
+        this.orderPaymentsService = orderPaymentsService;
     }
     async getAllOrdersForAdmin() {
-        return this.ordersService.findAllForAdmin();
+        return this.adminOrdersService.findAllForAdmin();
     }
     async getAdminOrderById(id) {
-        return this.ordersService.findAdminOrderById(id);
+        return this.adminOrdersService.findAdminOrderById(id);
     }
     async updateOrderStatus(id, dto) {
-        return this.ordersService.updateOrderStatus(id, dto);
+        return this.adminOrdersService.updateOrderStatus(id, dto);
     }
     async createOrder(user, dto) {
         return this.ordersService.createOrder(user.userId, dto);
     }
     async createRazorpayOrder(user, dto) {
-        return this.ordersService.createRazorpayOrder(user.userId, dto);
+        return this.orderPaymentsService.createRazorpayOrder(user.userId, dto);
     }
     async verifyPayment(user, dto) {
-        return this.ordersService.verifyPayment(user.userId, dto);
+        return this.orderPaymentsService.verifyPayment(user.userId, dto);
     }
     async getUserOrders(user) {
         return this.ordersService.getUserOrders(user.userId);
@@ -119,6 +125,8 @@ __decorate([
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [orders_service_1.OrdersService])
+    __metadata("design:paramtypes", [orders_service_1.OrdersService,
+        admin_orders_service_1.AdminOrdersService,
+        order_payments_service_1.OrderPaymentsService])
 ], OrdersController);
 //# sourceMappingURL=orders.controller.js.map

@@ -17,6 +17,17 @@ let ProductsService = class ProductsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    toProductResponse(product) {
+        return {
+            id: product.id,
+            name: product.name,
+            desc: product.desc,
+            price: Number(product.price),
+            type: product.type,
+            isActive: product.isActive,
+            images: product.images.map((img) => img.imgurl),
+        };
+    }
     async findAll(category) {
         const products = await this.prisma.product.findMany({
             where: {
@@ -34,15 +45,7 @@ let ProductsService = class ProductsService {
                 id: 'asc',
             },
         });
-        return products.map((product) => ({
-            id: product.id,
-            name: product.name,
-            desc: product.desc,
-            price: Number(product.price),
-            type: product.type,
-            isActive: product.isActive,
-            images: product.images.map((img) => img.imgurl),
-        }));
+        return products.map((product) => this.toProductResponse(product));
     }
     async findPricesByIds(ids) {
         if (ids.length === 0)
@@ -76,16 +79,7 @@ let ProductsService = class ProductsService {
         if (!product) {
             throw new common_1.NotFoundException(`Product with ID ${id} not found`);
         }
-        const imageUrls = product.images.map((img) => img.imgurl);
-        return {
-            id: product.id,
-            name: product.name,
-            desc: product.desc,
-            price: Number(product.price),
-            type: product.type,
-            isActive: product.isActive,
-            images: imageUrls,
-        };
+        return this.toProductResponse(product);
     }
 };
 exports.ProductsService = ProductsService;

@@ -8,40 +8,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var OrdersService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersService = void 0;
 const common_1 = require("@nestjs/common");
 const crypto_1 = require("crypto");
 const prisma_service_1 = require("../prisma/prisma.service");
-const razorpay_client_1 = require("./razorpay.client");
+const order_response_mapper_1 = require("./mappers/order-response.mapper");
 let OrdersService = class OrdersService {
-    static { OrdersService_1 = this; }
     prisma;
-    razorpay;
-    constructor(prisma, razorpay) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.razorpay = razorpay;
     }
-    static CUSTOMER_ORDER_INCLUDE = {
-        items: {
-            include: {
-                product: { include: { images: { take: 1 } } },
-                placements: true,
-            },
-        },
-    };
-    static ADMIN_ORDER_INCLUDE = {
-        user: {
-            select: { id: true, firstName: true, lastName: true, email: true, phone: true },
-        },
-        items: {
-            include: {
-                product: { select: { id: true, name: true, type: true } },
-                placements: true,
-            },
-        },
-    };
     async createOrder(userId, dto) {
         const address = await this.prisma.address.findFirst({
             where: {
@@ -133,95 +110,15 @@ let OrdersService = class OrdersService {
             order: newOrder,
         };
     }
-    async findAllForAdmin() {
-        const orders = await this.prisma.order.findMany({
-            orderBy: { createdAt: 'desc' },
-            include: OrdersService_1.ADMIN_ORDER_INCLUDE,
-        });
-        return {
-            success: true,
-            data: orders.map((order) => ({
-                ...order,
-                totalAmount: Number(order.totalAmount),
-                items: order.items.map((item) => ({
-                    ...item,
-                    unitPrice: Number(item.unitPrice),
-                })),
-            })),
-        };
-    }
-    async findAdminOrderById(orderId) {
-        const numericId = parseInt(orderId, 10);
-        if (isNaN(numericId)) {
-            throw new common_1.BadRequestException('Invalid order ID provided');
-        }
-        const order = await this.prisma.order.findUnique({
-            where: { id: numericId },
-            include: OrdersService_1.ADMIN_ORDER_INCLUDE,
-        });
-        if (!order) {
-            throw new common_1.NotFoundException(`Order with ID ${orderId} not found`);
-        }
-        return {
-            success: true,
-            data: {
-                ...order,
-                totalAmount: Number(order.totalAmount),
-                items: order.items.map((item) => ({
-                    ...item,
-                    unitPrice: Number(item.unitPrice),
-                })),
-            },
-        };
-    }
-    async updateOrderStatus(orderId, dto) {
-        const numericId = parseInt(orderId, 10);
-        if (isNaN(numericId)) {
-            throw new common_1.BadRequestException('Invalid order ID provided');
-        }
-        if (dto.status === undefined && dto.trackingNumber === undefined) {
-            throw new common_1.BadRequestException('At least status or trackingNumber must be provided');
-        }
-        const existingOrder = await this.prisma.order.findUnique({
-            where: { id: numericId },
-        });
-        if (!existingOrder) {
-            throw new common_1.NotFoundException(`Order with ID ${orderId} not found`);
-        }
-        const updatedOrder = await this.prisma.order.update({
-            where: { id: numericId },
-            data: {
-                ...(dto.status !== undefined && { status: dto.status }),
-                ...(dto.trackingNumber !== undefined && { trackingNumber: dto.trackingNumber }),
-            },
-            select: {
-                id: true,
-                orderCode: true,
-                status: true,
-                trackingNumber: true,
-            },
-        });
-        return {
-            success: true,
-            data: updatedOrder,
-        };
-    }
     async getUserOrders(userId) {
         const orders = await this.prisma.order.findMany({
             where: { uid: userId },
             orderBy: { createdAt: 'desc' },
-            include: OrdersService_1.CUSTOMER_ORDER_INCLUDE,
+            include: order_response_mapper_1.CUSTOMER_ORDER_INCLUDE,
         });
         return {
             success: true,
-            data: orders.map((order) => ({
-                ...order,
-                totalAmount: Number(order.totalAmount),
-                items: order.items.map((item) => ({
-                    ...item,
-                    unitPrice: Number(item.unitPrice),
-                })),
-            })),
+            data: orders.map((order) => (0, order_response_mapper_1.toOrderResponse)(order)),
         };
     }
     async getOrderById(userId, identifier) {
@@ -235,71 +132,17 @@ let OrdersService = class OrdersService {
                     { orderCode: identifier },
                 ],
             },
-            include: OrdersService_1.CUSTOMER_ORDER_INCLUDE,
+            include: order_response_mapper_1.CUSTOMER_ORDER_INCLUDE,
         });
         if (!order) {
             throw new common_1.NotFoundException('Order not found or access denied');
         }
         return { message: 'Order fetched successfully', order };
     }
-    async createRazorpayOrder(userId, dto) {
-        const order = await this.prisma.order.findFirst({
-            where: { id: dto.orderId, uid: userId },
-        });
-        if (!order) {
-            throw new common_1.NotFoundException('Order not found or access denied');
-        }
-        if (order.paymentStatus === 'PAID') {
-            throw new common_1.BadRequestException('This order has already been paid for');
-        }
-        const razorpayOrder = await this.razorpay.createOrder(Number(order.totalAmount), order.orderCode);
-        await this.prisma.order.update({
-            where: { id: order.id },
-            data: { razorpayOrderId: razorpayOrder.id },
-        });
-        return {
-            success: true,
-            data: {
-                razorpayOrderId: razorpayOrder.id,
-                amount: razorpayOrder.amount,
-                currency: razorpayOrder.currency,
-                keyId: this.razorpay.getPublicKeyId(),
-            },
-        };
-    }
-    async verifyPayment(userId, dto) {
-        const order = await this.prisma.order.findFirst({
-            where: { id: dto.orderId, uid: userId },
-        });
-        if (!order) {
-            throw new common_1.NotFoundException('Order not found or access denied');
-        }
-        if (order.razorpayOrderId !== dto.razorpayOrderId) {
-            throw new common_1.BadRequestException('Razorpay order id does not match this order');
-        }
-        const isValid = this.razorpay.verifySignature(dto.razorpayOrderId, dto.razorpayPaymentId, dto.razorpaySignature);
-        if (!isValid) {
-            await this.prisma.order.update({
-                where: { id: order.id },
-                data: { paymentStatus: 'FAILED' },
-            });
-            throw new common_1.BadRequestException('Payment signature verification failed');
-        }
-        await this.prisma.order.update({
-            where: { id: order.id },
-            data: {
-                paymentStatus: 'PAID',
-                razorpayPaymentId: dto.razorpayPaymentId,
-                status: 'PROCESSING',
-            },
-        });
-        return { success: true, message: 'Payment verified successfully' };
-    }
 };
 exports.OrdersService = OrdersService;
-exports.OrdersService = OrdersService = OrdersService_1 = __decorate([
+exports.OrdersService = OrdersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        razorpay_client_1.RazorpayClient])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], OrdersService);
 //# sourceMappingURL=orders.service.js.map

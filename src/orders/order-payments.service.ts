@@ -2,8 +2,8 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
-import { PAYMENT_GATEWAY, PaymentGatewayClient } from './interfaces/payment-gateway.interface';
-
+import { PAYMENT_GATEWAY } from './interfaces/payment-gateway.interface';
+import type { PaymentGatewayClient } from './interfaces/payment-gateway.interface';
 @Injectable()
 export class OrderPaymentsService {
   constructor(

@@ -4,22 +4,16 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { OrdersService } from './orders.service';
+import { AdminOrdersService } from './admin-orders.service';
+import { OrderPaymentsService } from './order-payments.service';
 export declare class OrdersController {
     private readonly ordersService;
-    constructor(ordersService: OrdersService);
+    private readonly adminOrdersService;
+    private readonly orderPaymentsService;
+    constructor(ordersService: OrdersService, adminOrdersService: AdminOrdersService, orderPaymentsService: OrderPaymentsService);
     getAllOrdersForAdmin(): Promise<{
         success: boolean;
-        data: {
-            totalAmount: number;
-            items: {
-                unitPrice: number;
-                id: number;
-                pid: number;
-                oid: number;
-                quantity: number;
-                size: string;
-                color: string | null;
-            }[];
+        data: ({
             user: {
                 id: number;
                 email: string;
@@ -35,6 +29,16 @@ export declare class OrdersController {
                 user: number;
                 items: number;
             };
+            items: {
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+                unitPrice: import("@prisma/client-runtime-utils").Decimal;
+            }[];
+        } & {
             id: number;
             createdAt: Date;
             address: import("@prisma/client/runtime/client").JsonValue;
@@ -42,25 +46,21 @@ export declare class OrdersController {
             orderCode: string;
             coupon: string | null;
             status: import("@prisma/client").$Enums.OrderStatus;
+            totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
             razorpayOrderId: string | null;
             razorpayPaymentId: string | null;
-        }[];
+        } & {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+            }[];
+        })[];
     }>;
     getAdminOrderById(id: string): Promise<{
         success: boolean;
         data: {
-            totalAmount: number;
-            items: {
-                unitPrice: number;
-                id: number;
-                pid: number;
-                oid: number;
-                quantity: number;
-                size: string;
-                color: string | null;
-            }[];
             user: {
                 id: number;
                 email: string;
@@ -76,6 +76,16 @@ export declare class OrdersController {
                 user: number;
                 items: number;
             };
+            items: {
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+                unitPrice: import("@prisma/client-runtime-utils").Decimal;
+            }[];
+        } & {
             id: number;
             createdAt: Date;
             address: import("@prisma/client/runtime/client").JsonValue;
@@ -83,10 +93,16 @@ export declare class OrdersController {
             orderCode: string;
             coupon: string | null;
             status: import("@prisma/client").$Enums.OrderStatus;
+            totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
             razorpayOrderId: string | null;
             razorpayPaymentId: string | null;
+        } & {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+            }[];
         };
     }>;
     updateOrderStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
@@ -152,17 +168,7 @@ export declare class OrdersController {
     }>;
     getUserOrders(user: RequestUser): Promise<{
         success: boolean;
-        data: {
-            totalAmount: number;
-            items: {
-                unitPrice: number;
-                id: number;
-                pid: number;
-                oid: number;
-                quantity: number;
-                size: string;
-                color: string | null;
-            }[];
+        data: ({
             user: {
                 id: number;
                 email: string;
@@ -178,6 +184,16 @@ export declare class OrdersController {
                 user: number;
                 items: number;
             };
+            items: {
+                id: number;
+                pid: number;
+                oid: number;
+                quantity: number;
+                size: string;
+                color: string | null;
+                unitPrice: import("@prisma/client-runtime-utils").Decimal;
+            }[];
+        } & {
             id: number;
             createdAt: Date;
             address: import("@prisma/client/runtime/client").JsonValue;
@@ -185,11 +201,17 @@ export declare class OrdersController {
             orderCode: string;
             coupon: string | null;
             status: import("@prisma/client").$Enums.OrderStatus;
+            totalAmount: import("@prisma/client-runtime-utils").Decimal;
             trackingNumber: string | null;
             paymentStatus: import("@prisma/client").$Enums.PaymentStatus | null;
             razorpayOrderId: string | null;
             razorpayPaymentId: string | null;
-        }[];
+        } & {
+            totalAmount: number;
+            items: {
+                unitPrice: number;
+            }[];
+        })[];
     }>;
     getOrderById(user: RequestUser, id: string): Promise<{
         message: string;

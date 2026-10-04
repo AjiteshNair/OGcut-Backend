@@ -10,14 +10,23 @@ exports.OrdersModule = void 0;
 const common_1 = require("@nestjs/common");
 const orders_controller_1 = require("./orders.controller");
 const orders_service_1 = require("./orders.service");
+const admin_orders_service_1 = require("./admin-orders.service");
+const order_payments_service_1 = require("./order-payments.service");
 const razorpay_client_1 = require("./razorpay.client");
+const payment_gateway_interface_1 = require("./interfaces/payment-gateway.interface");
 let OrdersModule = class OrdersModule {
 };
 exports.OrdersModule = OrdersModule;
 exports.OrdersModule = OrdersModule = __decorate([
     (0, common_1.Module)({
         controllers: [orders_controller_1.OrdersController],
-        providers: [orders_service_1.OrdersService, razorpay_client_1.RazorpayClient],
+        providers: [
+            orders_service_1.OrdersService,
+            admin_orders_service_1.AdminOrdersService,
+            order_payments_service_1.OrderPaymentsService,
+            razorpay_client_1.RazorpayClient,
+            { provide: payment_gateway_interface_1.PAYMENT_GATEWAY, useExisting: razorpay_client_1.RazorpayClient },
+        ],
         exports: [orders_service_1.OrdersService],
     })
 ], OrdersModule);
