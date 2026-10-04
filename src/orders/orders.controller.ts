@@ -16,11 +16,17 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { OrdersService } from './orders.service';
+import { AdminOrdersService } from './admin-orders.service';
+import { OrderPaymentsService } from './order-payments.service';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly adminOrdersService: AdminOrdersService,
+    private readonly orderPaymentsService: OrderPaymentsService,
+  ) {}
 
   // ==========================================
   // ADMIN ROUTES (Must come before generic :id routes to prevent route collisions)
@@ -29,13 +35,13 @@ export class OrdersController {
   @UseGuards(AdminGuard)
   @Get('admin/all')
   async getAllOrdersForAdmin() {
-    return this.ordersService.findAllForAdmin();
+    return this.adminOrdersService.findAllForAdmin();
   }
 
   @UseGuards(AdminGuard)
   @Get('admin/:id')
   async getAdminOrderById(@Param('id') id: string) {
-    return this.ordersService.findAdminOrderById(id);
+    return this.adminOrdersService.findAdminOrderById(id);
   }
 
   @UseGuards(AdminGuard)
@@ -44,7 +50,7 @@ export class OrdersController {
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateOrderStatus(id, dto);
+    return this.adminOrdersService.updateOrderStatus(id, dto);
   }
 
   // ==========================================
@@ -61,12 +67,12 @@ export class OrdersController {
     @CurrentUser() user: RequestUser,
     @Body() dto: CreateRazorpayOrderDto,
   ) {
-    return this.ordersService.createRazorpayOrder(user.userId, dto);
+    return this.orderPaymentsService.createRazorpayOrder(user.userId, dto);
   }
 
   @Post('verify-payment')
   async verifyPayment(@CurrentUser() user: RequestUser, @Body() dto: VerifyPaymentDto) {
-    return this.ordersService.verifyPayment(user.userId, dto);
+    return this.orderPaymentsService.verifyPayment(user.userId, dto);
   }
 
   @Get()

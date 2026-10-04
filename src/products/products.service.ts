@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface ProductResponse {
@@ -11,9 +12,23 @@ export interface ProductResponse {
   images: string[];
 }
 
+type ProductWithImages = Prisma.ProductGetPayload<{ include: { images: true } }>;
+
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private toProductResponse(product: ProductWithImages): ProductResponse {
+    return {
+      id: product.id,
+      name: product.name,
+      desc: product.desc,
+      price: Number(product.price),
+      type: product.type,
+      isActive: product.isActive,
+      images: product.images.map((img) => img.imgurl),
+    };
+  }
 
   async findAll(category?: string): Promise<ProductResponse[]> {
     const products = await this.prisma.product.findMany({
@@ -33,17 +48,8 @@ export class ProductsService {
       },
     });
 
-    return products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      desc: product.desc,
-      price: Number(product.price),
-      type: product.type,
-      isActive: product.isActive,
-      images: product.images.map((img) => img.imgurl), // Maps all fetched images to strings
-    }));
+    return products.map((product) => this.toProductResponse(product));
   }
-
 
   async findPricesByIds(ids: number[]): Promise<Record<number, number>> {
     if (ids.length === 0) return {};
@@ -82,17 +88,6 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    // Map directly to a sorted array of URL strings
-    const imageUrls = product.images.map((img) => img.imgurl);
-
-    return {
-      id: product.id,
-      name: product.name,
-      desc: product.desc,
-      price: Number(product.price),
-      type: product.type,
-      isActive: product.isActive,
-      images: imageUrls,
-    };
+    return this.toProductResponse(product);
   }
 }

@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'crypto';
-
-interface RazorpayOrderResponse {
-  id: string;
-  amount: number;
-  currency: string;
-}
+import { PaymentGatewayClient, PaymentGatewayOrder } from './interfaces/payment-gateway.interface';
 
 @Injectable()
-export class RazorpayClient {
+export class RazorpayClient implements PaymentGatewayClient {
   constructor(private readonly config: ConfigService) {}
 
   private get keyId(): string {
@@ -24,8 +19,7 @@ export class RazorpayClient {
     return secret;
   }
 
-  /** Creates a Razorpay order for the given amount (in rupees) and returns its id. */
-  async createOrder(amountInRupees: number, receipt: string): Promise<RazorpayOrderResponse> {
+  async createOrder(amountInRupees: number, receipt: string): Promise<PaymentGatewayOrder> {
     const auth = Buffer.from(`${this.keyId}:${this.keySecret}`).toString('base64');
 
     const res = await fetch('https://api.razorpay.com/v1/orders', {

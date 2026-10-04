@@ -1,49 +1,13 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
-import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
-import { VerifyPaymentDto } from './dto/verify-payment.dto';
-import { RazorpayClient } from './razorpay.client';
+import { CUSTOMER_ORDER_INCLUDE, toOrderResponse } from './mappers/order-response.mapper';
 
 @Injectable()
 export class OrdersService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly razorpay: RazorpayClient,
-  ) {}
-
-  // Shared Prisma `include` shapes — previously copy-pasted identically
-  // across getUserOrders/getOrderById (customer-facing) and
-  // findAllForAdmin/findAdminOrderById (admin-facing). One change here
-  // now updates every query that uses it instead of needing to find and
-  // edit all four call sites in sync.
-  private static readonly CUSTOMER_ORDER_INCLUDE: Prisma.OrderInclude = {
-    items: {
-      include: {
-        product: { include: { images: { take: 1 } } },
-        placements: true,
-      },
-    },
-  };
-
-  private static readonly ADMIN_ORDER_INCLUDE: Prisma.OrderInclude = {
-    user: {
-      select: { id: true, firstName: true, lastName: true, email: true, phone: true },
-    },
-    items: {
-      include: {
-        product: { select: { id: true, name: true, type: true } },
-        placements: true,
-      },
-    },
-  };
+  constructor(private readonly prisma: PrismaService) {}
 
   async createOrder(userId: number, dto: CreateOrderDto) {
     // 1. Fetch user address to store as a permanent JSON snapshot on the Order
@@ -156,117 +120,16 @@ export class OrdersService {
     };
   }
 
-  // ==========================================
-  // ADMIN SERVICE METHODS
-  // ==========================================
-
-  async findAllForAdmin() {
-    const orders = await this.prisma.order.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: OrdersService.ADMIN_ORDER_INCLUDE,
-    });
-
-    return {
-      success: true,
-      data: orders.map((order) => ({
-        ...order,
-        totalAmount: Number(order.totalAmount),
-        items: order.items.map((item) => ({
-          ...item,
-          unitPrice: Number(item.unitPrice),
-        })),
-      })),
-    };
-  }
-
-  async findAdminOrderById(orderId: string) {
-    const numericId = parseInt(orderId, 10);
-    if (isNaN(numericId)) {
-      throw new BadRequestException('Invalid order ID provided');
-    }
-
-    const order = await this.prisma.order.findUnique({
-      where: { id: numericId },
-      include: OrdersService.ADMIN_ORDER_INCLUDE,
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${orderId} not found`);
-    }
-
-    return {
-      success: true,
-      data: {
-        ...order,
-        totalAmount: Number(order.totalAmount),
-        items: order.items.map((item) => ({
-          ...item,
-          unitPrice: Number(item.unitPrice),
-        })),
-      },
-    };
-  }
-
-  async updateOrderStatus(orderId: string, dto: UpdateOrderStatusDto) {
-    const numericId = parseInt(orderId, 10);
-    if (isNaN(numericId)) {
-      throw new BadRequestException('Invalid order ID provided');
-    }
-
-    // Ensure at least one field is being updated
-    if (dto.status === undefined && dto.trackingNumber === undefined) {
-      throw new BadRequestException('At least status or trackingNumber must be provided');
-    }
-
-    const existingOrder = await this.prisma.order.findUnique({
-      where: { id: numericId },
-    });
-
-    if (!existingOrder) {
-      throw new NotFoundException(`Order with ID ${orderId} not found`);
-    }
-
-    const updatedOrder = await this.prisma.order.update({
-      where: { id: numericId },
-      data: {
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.trackingNumber !== undefined && { trackingNumber: dto.trackingNumber }),
-      },
-      select: {
-        id: true,
-        orderCode: true,
-        status: true,
-        trackingNumber: true,
-      },
-    });
-
-    return {
-      success: true,
-      data: updatedOrder,
-    };
-  }
-
-  // ==========================================
-  // CUSTOMER / USER SERVICE METHODS
-  // ==========================================
-
   async getUserOrders(userId: number) {
     const orders = await this.prisma.order.findMany({
       where: { uid: userId },
       orderBy: { createdAt: 'desc' },
-      include: OrdersService.CUSTOMER_ORDER_INCLUDE,
+      include: CUSTOMER_ORDER_INCLUDE,
     });
 
     return {
       success: true,
-      data: orders.map((order) => ({
-        ...order,
-        totalAmount: Number(order.totalAmount),
-        items: order.items.map((item) => ({
-          ...item,
-          unitPrice: Number(item.unitPrice),
-        })),
-      })),
+      data: orders.map((order) => toOrderResponse(order)),
     };
   }
 
@@ -282,7 +145,7 @@ export class OrdersService {
           { orderCode: identifier },
         ],
       },
-      include: OrdersService.CUSTOMER_ORDER_INCLUDE,
+      include: CUSTOMER_ORDER_INCLUDE,
     });
 
     if (!order) {
@@ -290,89 +153,5 @@ export class OrdersService {
     }
 
     return { message: 'Order fetched successfully', order };
-  }
-
-  /**
-   * Creates a Razorpay order for an existing, unpaid order and stores the
-   * Razorpay order id against it. The frontend uses the returned id to open
-   * the Razorpay Checkout modal.
-   */
-  async createRazorpayOrder(userId: number, dto: CreateRazorpayOrderDto) {
-    const order = await this.prisma.order.findFirst({
-      where: { id: dto.orderId, uid: userId },
-    });
-
-    if (!order) {
-      throw new NotFoundException('Order not found or access denied');
-    }
-
-    if (order.paymentStatus === 'PAID') {
-      throw new BadRequestException('This order has already been paid for');
-    }
-
-    const razorpayOrder = await this.razorpay.createOrder(
-      Number(order.totalAmount),
-      order.orderCode,
-    );
-
-    await this.prisma.order.update({
-      where: { id: order.id },
-      data: { razorpayOrderId: razorpayOrder.id },
-    });
-
-    return {
-      success: true,
-      data: {
-        razorpayOrderId: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        keyId: this.razorpay.getPublicKeyId(),
-      },
-    };
-  }
-
-  /**
-   * Verifies the signature Razorpay Checkout returns after a successful
-   * payment, then marks the order as paid. This is the step that actually
-   * confirms payment happened — the checkout modal succeeding client-side
-   * is not itself trustworthy without this check.
-   */
-  async verifyPayment(userId: number, dto: VerifyPaymentDto) {
-    const order = await this.prisma.order.findFirst({
-      where: { id: dto.orderId, uid: userId },
-    });
-
-    if (!order) {
-      throw new NotFoundException('Order not found or access denied');
-    }
-
-    if (order.razorpayOrderId !== dto.razorpayOrderId) {
-      throw new BadRequestException('Razorpay order id does not match this order');
-    }
-
-    const isValid = this.razorpay.verifySignature(
-      dto.razorpayOrderId,
-      dto.razorpayPaymentId,
-      dto.razorpaySignature,
-    );
-
-    if (!isValid) {
-      await this.prisma.order.update({
-        where: { id: order.id },
-        data: { paymentStatus: 'FAILED' },
-      });
-      throw new BadRequestException('Payment signature verification failed');
-    }
-
-    await this.prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentStatus: 'PAID',
-        razorpayPaymentId: dto.razorpayPaymentId,
-        status: 'PROCESSING',
-      },
-    });
-
-    return { success: true, message: 'Payment verified successfully' };
   }
 }
